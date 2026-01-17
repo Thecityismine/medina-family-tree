@@ -1,0 +1,2719 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Medina Family Tree</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --cream: #FAF9F6;
+            --warm-gray: #8B8680;
+            --charcoal: #2C2C2C;
+            --aged-gold: #B8956A;
+            --forest-green: #4A5D4F;
+            --burgundy: #6B3E3E;
+            --soft-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            --modal-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            
+            /* Light mode (default) */
+            --bg-primary: #FAF9F6;
+            --bg-secondary: #FFFFFF;
+            --bg-tertiary: rgba(184, 149, 106, 0.05);
+            --text-primary: #2C2C2C;
+            --text-secondary: #8B8680;
+            --border-color: rgba(139, 134, 128, 0.1);
+            --card-bg: #FFFFFF;
+            --sidebar-bg: #FFFFFF;
+        }
+
+        /* Updated Dark Mode - v2.0 - Pure Black Theme */
+        [data-theme="dark"] {
+            --cream: #000000;
+            --warm-gray: #8E8E93;
+            --charcoal: #F5F5F7;
+            --soft-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            --modal-shadow: 0 8px 24px rgba(0,0,0,0.7);
+            
+            /* Dark mode - Pure Black iOS Style */
+            --bg-primary: #000000;
+            --bg-secondary: #1C1C1E;
+            --bg-tertiary: rgba(184, 149, 106, 0.05);
+            --text-primary: #F5F5F7;
+            --text-secondary: #8E8E93;
+            --border-color: #2C2C2E;
+            --card-bg: #1C1C1E;
+            --sidebar-bg: #000000;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* App Layout */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 32px 24px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        .sidebar.mobile-hidden {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-header {
+            margin-bottom: 48px;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            transition: color 0.3s ease;
+        }
+
+        .logo-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+
+        .nav-section {
+            margin-bottom: 32px;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            margin-bottom: 4px;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: rgba(184, 149, 106, 0.1);
+            color: var(--aged-gold);
+        }
+
+        .nav-item.active {
+            background: var(--aged-gold);
+            color: white;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            width: 24px;
+        }
+
+        .nav-text {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .nav-badge {
+            background: var(--burgundy);
+            color: white;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .nav-item.active .nav-badge {
+            background: white;
+            color: var(--aged-gold);
+        }
+
+        /* User Profile in Sidebar */
+        .sidebar-user {
+            border-top: 1px solid var(--border-color);
+            padding-top: 24px;
+            margin-top: auto;
+            transition: border-color 0.3s ease;
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .user-card:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--aged-gold), var(--forest-green));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: 'Playfair Display', serif;
+            font-size: 16px;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            background: var(--bg-tertiary);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .theme-toggle-icon {
+            font-size: 18px;
+        }
+
+        .theme-switch {
+            position: relative;
+            width: 50px;
+            height: 28px;
+            background: var(--warm-gray);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .theme-switch.active {
+            background: var(--aged-gold);
+        }
+
+        .theme-switch::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s;
+        }
+
+        .theme-switch.active::after {
+            transform: translateX(22px);
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 101;
+            background: var(--aged-gold);
+            color: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: var(--soft-shadow);
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        .main-content.sidebar-hidden {
+            margin-left: 0;
+        }
+
+        /* Page Sections */
+        .page-section {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Page Header */
+        .page-header {
+            padding: 48px;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .page-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 42px;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            transition: color 0.3s ease;
+        }
+
+        .page-subtitle {
+            font-size: 16px;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+
+        .page-content {
+            padding: 48px;
+            overflow-x: hidden;
+        }
+
+        /* Home/Landing Section */
+        .hero-section {
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 80px 48px;
+            background: var(--bg-tertiary);
+            transition: background-color 0.3s ease;
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 64px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            line-height: 1.2;
+            transition: color 0.3s ease;
+        }
+
+        .hero-text {
+            font-size: 20px;
+            color: var(--text-secondary);
+            margin-bottom: 48px;
+            max-width: 600px;
+            transition: color 0.3s ease;
+        }
+
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        @media (max-width: 480px) {
+            .quick-stats {
+                gap: 16px;
+            }
+        }
+
+        .stat-box {
+            background: var(--card-bg);
+            padding: 40px 24px;
+            border-radius: 16px;
+            box-shadow: var(--soft-shadow);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 180px;
+            width: 100%;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--modal-shadow);
+            border-color: var(--aged-gold);
+        }
+
+        .stat-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 52px;
+            font-weight: 600;
+            color: var(--aged-gold);
+            margin-bottom: 12px;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 15px;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            line-height: 1.3;
+            max-width: 100%;
+        }
+
+        /* Tree View Styles */
+        .tree-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 48px;
+            box-shadow: var(--soft-shadow);
+            overflow-x: auto;
+            transition: all 0.3s ease;
+        }
+
+        .generation {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin: 32px 0;
+        }
+
+        .person-card {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            width: 180px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .person-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--soft-shadow);
+            border-color: var(--aged-gold);
+        }
+
+        .person-card.you {
+            border-color: var(--aged-gold);
+            border-width: 3px;
+        }
+
+        .person-photo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--aged-gold), var(--forest-green));
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+            font-family: 'Playfair Display', serif;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .person-photo:hover {
+            transform: scale(1.05);
+        }
+
+        .person-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .photo-upload-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            font-size: 10px;
+            padding: 4px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .person-photo:hover .photo-upload-overlay {
+            opacity: 1;
+        }
+
+        .person-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            transition: color 0.3s ease;
+        }
+
+        .person-relation {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            transition: color 0.3s ease;
+        }
+
+        .godparent-badge {
+            display: inline-block;
+            background: rgba(74, 93, 79, 0.15);
+            color: var(--forest-green);
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 6px;
+            border: 1px solid rgba(74, 93, 79, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] .godparent-badge {
+            background: rgba(74, 93, 79, 0.25);
+            border-color: rgba(74, 93, 79, 0.5);
+            color: #8FB69C;
+        }
+
+        .person-details {
+            font-size: 12px;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+
+        /* Deceased Member Styling */
+        .person-card.deceased {
+            position: relative;
+            opacity: 0.85;
+            border-style: solid;
+        }
+
+        .person-card.deceased::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.03) 0%, transparent 100%);
+            border-radius: 12px;
+            pointer-events: none;
+        }
+
+        .person-card.deceased .person-photo {
+            background: linear-gradient(135deg, #8B8680, #B0A89F);
+            opacity: 0.9;
+        }
+
+        .dove-icon {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 10;
+        }
+
+        [data-theme="dark"] .dove-icon {
+            background: var(--bg-secondary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .passed-date {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-style: italic;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .date-separator {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin: 0 2px;
+        }
+
+        /* Pet Card Styling */
+        .pet-card {
+            background: var(--card-bg);
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            width: 140px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .pet-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--soft-shadow);
+            border-color: var(--aged-gold);
+            border-style: solid;
+        }
+
+        .pet-card.deceased {
+            opacity: 0.75;
+        }
+
+        .pet-photo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #C8D5B9, #B8956A);
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .pet-card.deceased .pet-photo {
+            background: linear-gradient(135deg, #B0A89F, #8B8680);
+            opacity: 0.8;
+        }
+
+        .pet-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+            transition: color 0.3s ease;
+        }
+
+        .pet-type {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-style: italic;
+            transition: color 0.3s ease;
+        }
+
+        .pet-owner {
+            font-size: 10px;
+            color: var(--aged-gold);
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        .pet-details {
+            font-size: 11px;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+
+        .paw-icon {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--aged-gold);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            z-index: 10;
+        }
+
+        .pet-connection {
+            width: 1px;
+            height: 20px;
+            background: linear-gradient(to bottom, var(--aged-gold), rgba(184, 149, 106, 0.3));
+            background-image: repeating-linear-gradient(
+                0deg,
+                var(--aged-gold),
+                var(--aged-gold) 3px,
+                transparent 3px,
+                transparent 6px
+            );
+            margin: 8px auto;
+        }
+
+        .pets-group {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .connection-line {
+            width: 2px;
+            height: 40px;
+            background: linear-gradient(to bottom, var(--aged-gold), rgba(184, 149, 106, 0.3));
+            margin: 0 auto;
+        }
+
+        /* Birthday Section Styles */
+        .birthday-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .birthday-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--soft-shadow);
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .birthday-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--modal-shadow);
+        }
+
+        .birthday-card.today {
+            border: 2px solid var(--aged-gold);
+            background: var(--bg-tertiary);
+        }
+
+        .birthday-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--aged-gold), var(--forest-green));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-family: 'Playfair Display', serif;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .birthday-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .birthday-info {
+            flex: 1;
+        }
+
+        .birthday-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+
+        .birthday-date {
+            font-size: 14px;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+
+        .days-badge {
+            background: var(--aged-gold);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .days-badge.today {
+            background: var(--burgundy);
+        }
+
+        /* Month Selector for Birthdays */
+        .month-selector {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 16px 0;
+            margin-bottom: 32px;
+            scrollbar-width: thin;
+            -webkit-overflow-scrolling: touch;
+            /* Prevent page-wide scroll */
+            max-width: 100%;
+            scroll-behavior: smooth;
+        }
+
+        .month-selector::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .month-selector::-webkit-scrollbar-thumb {
+            background: var(--aged-gold);
+            border-radius: 2px;
+        }
+
+        .month-selector::-webkit-scrollbar-track {
+            background: rgba(139, 134, 128, 0.1);
+        }
+
+        .month-btn {
+            padding: 10px 20px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-width: fit-content;
+        }
+
+        .month-btn:hover {
+            border-color: var(--aged-gold);
+            color: var(--aged-gold);
+        }
+
+        .month-btn.active {
+            background: var(--aged-gold);
+            color: white;
+            border-color: var(--aged-gold);
+        }
+
+        .month-btn .count {
+            margin-left: 8px;
+            opacity: 0.7;
+            font-size: 12px;
+        }
+
+        /* Map Section Styles */
+        .map-container {
+            width: 100%;
+            height: 500px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--soft-shadow);
+            border: 1px solid var(--border-color);
+            margin-bottom: 32px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .map-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #E8E6E3 0%, #C8C6C3 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        [data-theme="dark"] .map-placeholder {
+            background: linear-gradient(135deg, #2A2A2A 0%, #1A1A1A 100%);
+        }
+
+        .map-marker {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: var(--burgundy);
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.3s;
+            animation: markerDrop 0.6s ease-out;
+        }
+
+        .map-marker:hover {
+            transform: rotate(-45deg) scale(1.2);
+        }
+
+        .map-marker::after {
+            content: attr(data-count);
+            position: absolute;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+            transform: rotate(45deg);
+        }
+
+        @keyframes markerDrop {
+            0% {
+                transform: rotate(-45deg) translateY(-200px);
+                opacity: 0;
+            }
+            60% {
+                transform: rotate(-45deg) translateY(10px);
+            }
+            80% {
+                transform: rotate(-45deg) translateY(-5px);
+            }
+            100% {
+                transform: rotate(-45deg) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .location-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .location-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .location-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--soft-shadow);
+            border-color: var(--aged-gold);
+        }
+
+        .location-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .location-flag {
+            font-size: 32px;
+            line-height: 1;
+        }
+
+        .location-info {
+            flex: 1;
+        }
+
+        .location-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            transition: color 0.3s ease;
+        }
+
+        .location-country {
+            font-size: 13px;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+
+        .location-count {
+            background: var(--aged-gold);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .location-members {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .member-chip {
+            background: var(--bg-tertiary);
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .member-chip:hover {
+            background: var(--aged-gold);
+            color: white;
+        }
+
+        /* Profile Section */
+        .profile-container {
+            max-width: 800px;
+        }
+
+        .profile-header {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 48px;
+            box-shadow: var(--soft-shadow);
+            text-align: center;
+            margin-bottom: 32px;
+            transition: all 0.3s ease;
+        }
+
+        .profile-photo-large {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--aged-gold), var(--forest-green));
+            margin: 0 auto 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+            color: white;
+            font-family: 'Playfair Display', serif;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s;
+            box-shadow: var(--modal-shadow);
+        }
+
+        .profile-photo-large:hover {
+            transform: scale(1.05);
+        }
+
+        .profile-photo-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .profile-photo-large .photo-upload-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            font-size: 12px;
+            padding: 8px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .profile-photo-large:hover .photo-upload-overlay {
+            opacity: 1;
+        }
+
+        .profile-name-large {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+
+        .profile-role-badge {
+            display: inline-block;
+            background: var(--aged-gold);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .profile-bio {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            max-width: 600px;
+            margin: 0 auto;
+            transition: color 0.3s ease;
+        }
+
+        .profile-section {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: var(--soft-shadow);
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .profile-section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            margin-bottom: 24px;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--aged-gold);
+            color: white;
+            box-shadow: var(--soft-shadow);
+        }
+
+        .btn-primary:hover {
+            background: #A67D52;
+            transform: translateY(-2px);
+            box-shadow: var(--modal-shadow);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--aged-gold);
+            color: var(--aged-gold);
+        }
+
+        /* Settings Section */
+        .settings-grid {
+            display: grid;
+            gap: 24px;
+        }
+
+        .setting-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--soft-shadow);
+            transition: all 0.3s ease;
+        }
+
+        .setting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .setting-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            transition: color 0.3s ease;
+        }
+
+        .setting-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            transition: color 0.3s ease;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 28px;
+            background: var(--warm-gray);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: var(--aged-gold);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(22px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 240px;
+            }
+
+            .main-content {
+                margin-left: 240px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .page-header {
+                padding: 32px 24px;
+            }
+
+            .page-content {
+                padding: 24px;
+            }
+
+            .hero-title {
+                font-size: 36px;
+            }
+
+            .hero-text {
+                font-size: 16px;
+            }
+
+            /* Keep 2 columns for stats on mobile */
+            .quick-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+
+            .stat-box {
+                height: 160px;
+                padding: 32px 16px;
+            }
+
+            .stat-number {
+                font-size: 48px;
+            }
+
+            .stat-label {
+                font-size: 14px;
+            }
+
+            .generation {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .person-card {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .birthday-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .month-selector {
+                margin-left: -24px;
+                margin-right: -24px;
+                padding-left: 24px;
+                padding-right: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">The Medina Family</div>
+                <div class="logo-subtitle">Est. 1947</div>
+            </div>
+
+            <nav>
+                <div class="nav-section">
+                    <div class="nav-label">Main</div>
+                    <a class="nav-item active" onclick="navigateTo('home')">
+                        <span class="nav-icon">🏠</span>
+                        <span class="nav-text">Home</span>
+                    </a>
+                    <a class="nav-item" onclick="navigateTo('tree')">
+                        <span class="nav-icon">🌳</span>
+                        <span class="nav-text">Family Tree</span>
+                        <span class="nav-badge">15</span>
+                    </a>
+                    <a class="nav-item" onclick="navigateTo('birthdays')">
+                        <span class="nav-icon">🎂</span>
+                        <span class="nav-text">Birthdays</span>
+                        <span class="nav-badge">3</span>
+                    </a>
+                    <a class="nav-item" onclick="navigateTo('map')">
+                        <span class="nav-icon">🗺️</span>
+                        <span class="nav-text">Locations</span>
+                        <span class="nav-badge">5</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-label">Personal</div>
+                    <a class="nav-item" onclick="navigateTo('profile')">
+                        <span class="nav-icon">👤</span>
+                        <span class="nav-text">My Profile</span>
+                    </a>
+                    <a class="nav-item" onclick="navigateTo('photos')">
+                        <span class="nav-icon">📸</span>
+                        <span class="nav-text">Photos</span>
+                        <span class="nav-badge">47</span>
+                    </a>
+                    <a class="nav-item" onclick="navigateTo('memories')">
+                        <span class="nav-icon">💭</span>
+                        <span class="nav-text">Memories</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-label">Admin</div>
+                    <a class="nav-item" onclick="navigateTo('invitations')">
+                        <span class="nav-icon">✉️</span>
+                        <span class="nav-text">Invitations</span>
+                    </a>
+                    <a class="nav-item" onclick="navigateTo('settings')">
+                        <span class="nav-icon">⚙️</span>
+                        <span class="nav-text">Settings</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-user">
+                <div class="theme-toggle">
+                    <div class="theme-toggle-label">
+                        <span class="theme-toggle-icon" id="themeIcon">☀️</span>
+                        <span id="themeLabel">Light Mode</span>
+                    </div>
+                    <div class="theme-switch active" id="themeSwitch" onclick="toggleTheme()"></div>
+                </div>
+                
+                <div class="user-card" onclick="navigateTo('profile')">
+                    <div class="user-avatar">J</div>
+                    <div class="user-info">
+                        <div class="user-name">Jorge Medina</div>
+                        <div class="user-role">Family Admin</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            
+            <!-- HOME SECTION -->
+            <section class="page-section active" id="home">
+                <div class="hero-section">
+                    <h1 class="hero-title">Welcome Home, Jorge</h1>
+                    <p class="hero-text">Your family tree is growing! 3 new members joined this week, Max is celebrating his birthday next month, and there are 2 family birthdays coming up soon.</p>
+                    
+                    <div class="quick-stats">
+                        <div class="stat-box">
+                            <div class="stat-number">15</div>
+                            <div class="stat-label">Family Members</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">4</div>
+                            <div class="stat-label">Generations</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">47</div>
+                            <div class="stat-label">Photos Shared</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">3</div>
+                            <div class="stat-label">Countries</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="page-content">
+                    <h2 style="font-family: 'Playfair Display', serif; font-size: 32px; margin-bottom: 24px;">🎉 Upcoming Birthdays</h2>
+                    <div class="birthday-grid">
+                        <div class="birthday-card today">
+                            <div class="birthday-avatar">A</div>
+                            <div class="birthday-info">
+                                <div class="birthday-name">Anseli Medina</div>
+                                <div class="birthday-date">Today • Turning 34</div>
+                            </div>
+                            <div class="days-badge today">TODAY!</div>
+                        </div>
+
+                        <div class="birthday-card">
+                            <div class="birthday-avatar">M</div>
+                            <div class="birthday-info">
+                                <div class="birthday-name">Maria Medina</div>
+                                <div class="birthday-date">January 22 • Turning 38</div>
+                            </div>
+                            <div class="days-badge">7 days</div>
+                        </div>
+
+                        <div class="birthday-card" style="border-style: dashed;">
+                            <div class="birthday-avatar" style="background: linear-gradient(135deg, #C8D5B9, #B8956A);">🐕</div>
+                            <div class="birthday-info">
+                                <div class="birthday-name">Max <span style="font-size: 12px; color: var(--aged-gold);">🐾</span></div>
+                                <div class="birthday-date">February 14 • Turning 8</div>
+                            </div>
+                            <div class="days-badge">29 days</div>
+                        </div>
+
+                        <div class="birthday-card">
+                            <div class="birthday-avatar">R</div>
+                            <div class="birthday-info">
+                                <div class="birthday-name">Roberto Medina</div>
+                                <div class="birthday-date">February 8 • Turning 81</div>
+                            </div>
+                            <div class="days-badge">24 days</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TREE SECTION -->
+            <section class="page-section" id="tree">
+                <div class="page-header">
+                    <h1 class="page-title">Family Tree</h1>
+                    <p class="page-subtitle">2 generations • 5 members • The Medina Family</p>
+                </div>
+
+                <div class="page-content">
+                    <div style="background: var(--bg-tertiary); border-left: 3px solid var(--aged-gold); padding: 16px 20px; border-radius: 8px; margin-bottom: 32px; transition: all 0.3s ease;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <span style="font-size: 24px;">🕊️</span>
+                            <div style="flex: 1;">
+                                <div style="font-size: 14px; color: var(--text-primary); font-weight: 500; margin-bottom: 2px; transition: color 0.3s ease;">Honoring Our Loved Ones</div>
+                                <div style="font-size: 13px; color: var(--text-secondary); transition: color 0.3s ease;">Family members and pets who have passed are marked with a dove icon and their year of passing.</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                            <span style="font-size: 24px;">🐾</span>
+                            <div style="flex: 1;">
+                                <div style="font-size: 14px; color: var(--text-primary); font-weight: 500; margin-bottom: 2px; transition: color 0.3s ease;">Our Furry Family</div>
+                                <div style="font-size: 13px; color: var(--text-secondary); transition: color 0.3s ease;">Pets are shown with dashed borders and paw print icons, linked to their owners.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tree-container">
+                        <!-- Generation 0: Great-Grandparents (Deceased) -->
+                        <div class="generation">
+                            <div class="person-card deceased">
+                                <div class="dove-icon">🕊️</div>
+                                <div class="person-photo">A</div>
+                                <div class="person-name">Antonio Medina</div>
+                                <div class="person-relation">Great-Grandfather</div>
+                                <div class="person-details">
+                                    b. 1920 • 🇲🇽 Mexico
+                                    <div class="passed-date">
+                                        <span class="date-separator">†</span> 2005
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="person-card deceased">
+                                <div class="dove-icon">🕊️</div>
+                                <div class="person-photo">G</div>
+                                <div class="person-name">Guadalupe Medina</div>
+                                <div class="person-relation">Great-Grandmother</div>
+                                <div class="person-details">
+                                    b. 1923 • 🇲🇽 Mexico
+                                    <div class="passed-date">
+                                        <span class="date-separator">†</span> 2010
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="connection-line"></div>
+
+                        <!-- Generation 1: Grandparents -->
+                        <div class="generation">
+                            <div class="person-card">
+                                <div class="person-photo">
+                                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect fill='%23B8956A' width='80' height='80'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='36' font-family='serif'%3ER%3C/text%3E%3C/svg%3E" alt="Roberto">
+                                    <div class="photo-upload-overlay">📷 Add Photo</div>
+                                </div>
+                                <div class="person-name">Roberto</div>
+                                <div class="person-relation">
+                                    Grandfather
+                                    <span class="godparent-badge">🙏 Godfather</span>
+                                </div>
+                                <div class="person-details">b. 1945 • 🇲🇽 Mexico</div>
+                            </div>
+                            <div class="person-card">
+                                <div class="person-photo">
+                                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect fill='%234A5D4F' width='80' height='80'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='36' font-family='serif'%3EC%3C/text%3E%3C/svg%3E" alt="Carmen">
+                                    <div class="photo-upload-overlay">📷 Add Photo</div>
+                                </div>
+                                <div class="person-name">Carmen</div>
+                                <div class="person-relation">
+                                    Grandmother
+                                    <span class="godparent-badge">🙏 Godmother</span>
+                                </div>
+                                <div class="person-details">b. 1948 • 🇲🇽 Mexico</div>
+                            </div>
+                        </div>
+
+                        <div class="connection-line"></div>
+
+                        <!-- Generation 2: Parents -->
+                        <div class="generation">
+                            <div class="person-card">
+                                <div class="person-photo">J</div>
+                                <div class="person-name">Jorge Sr.</div>
+                                <div class="person-relation">Father</div>
+                                <div class="person-details">b. 1970 • 🇺🇸 California</div>
+                            </div>
+                            <div class="person-card">
+                                <div class="person-photo">M</div>
+                                <div class="person-name">Maria</div>
+                                <div class="person-relation">Sister</div>
+                                <div class="person-details">b. 1988 • 🇺🇸 Texas</div>
+                            </div>
+                        </div>
+
+                        <div class="connection-line"></div>
+
+                        <!-- Generation 3: Your Generation -->
+                        <div class="generation">
+                            <div class="person-card you">
+                                <div class="person-photo">J</div>
+                                <div class="person-name">Jorge</div>
+                                <div class="person-relation">You (Admin)</div>
+                                <div class="person-details">b. 1990 • 🇺🇸 California</div>
+                            </div>
+                            <div class="person-card">
+                                <div class="person-photo">A</div>
+                                <div class="person-name">Anseli</div>
+                                <div class="person-relation">Spouse</div>
+                                <div class="person-details">b. 1992 • 🇺🇸 California</div>
+                            </div>
+                        </div>
+
+                        <!-- Pets Section -->
+                        <div class="pet-connection"></div>
+                        <div class="pets-group">
+                            <div class="pet-card">
+                                <div class="paw-icon">🐾</div>
+                                <div class="pet-photo">🐕</div>
+                                <div class="pet-name">Max</div>
+                                <div class="pet-type">Golden Retriever</div>
+                                <div class="pet-details">b. 2018</div>
+                                <div class="pet-owner">Jorge & Anseli</div>
+                            </div>
+
+                            <div class="pet-card">
+                                <div class="paw-icon">🐾</div>
+                                <div class="pet-photo">😺</div>
+                                <div class="pet-name">Luna</div>
+                                <div class="pet-type">Tabby Cat</div>
+                                <div class="pet-details">b. 2020</div>
+                                <div class="pet-owner">Jorge & Anseli</div>
+                            </div>
+
+                            <div class="pet-card deceased">
+                                <div class="dove-icon">🕊️</div>
+                                <div class="pet-photo">🐕</div>
+                                <div class="pet-name">Buddy</div>
+                                <div class="pet-type">Labrador</div>
+                                <div class="pet-details">
+                                    b. 2008
+                                    <div class="passed-date">
+                                        <span class="date-separator">†</span> 2022
+                                    </div>
+                                </div>
+                                <div class="pet-owner">Jorge & Anseli</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BIRTHDAYS SECTION -->
+            <section class="page-section" id="birthdays">
+                <div class="page-header">
+                    <h1 class="page-title">🎂 Family Birthdays</h1>
+                    <p class="page-subtitle">Never miss a celebration • 15 birthdays this year</p>
+                </div>
+
+                <div class="page-content">
+                    <!-- Stats Dashboard -->
+                    <div class="quick-stats" style="margin-bottom: 48px;">
+                        <div class="stat-box">
+                            <div class="stat-number">3</div>
+                            <div class="stat-label">This Month</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">2</div>
+                            <div class="stat-label">Next 30 Days</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">15</div>
+                            <div class="stat-label">Total Birthdays</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">45</div>
+                            <div class="stat-label">Average Age</div>
+                        </div>
+                    </div>
+
+                    <!-- Coming Up Soon -->
+                    <div style="margin-bottom: 48px;">
+                        <h2 style="font-family: 'Playfair Display', serif; font-size: 28px; margin-bottom: 24px; color: var(--text-primary); transition: color 0.3s ease;">🎉 Coming Up Soon</h2>
+                        <div class="birthday-grid">
+                            <div class="birthday-card today">
+                                <div class="birthday-avatar">A</div>
+                                <div class="birthday-info">
+                                    <div class="birthday-name">Anseli Medina</div>
+                                    <div class="birthday-date">January 15 • Turning 34</div>
+                                </div>
+                                <div class="days-badge today">TODAY!</div>
+                            </div>
+
+                            <div class="birthday-card">
+                                <div class="birthday-avatar">M</div>
+                                <div class="birthday-info">
+                                    <div class="birthday-name">Maria Medina</div>
+                                    <div class="birthday-date">January 22 • Turning 38</div>
+                                </div>
+                                <div class="days-badge">7 days</div>
+                            </div>
+
+                            <div class="birthday-card">
+                                <div class="birthday-avatar">C</div>
+                                <div class="birthday-info">
+                                    <div class="birthday-name">Carmen Medina</div>
+                                    <div class="birthday-date">January 28 • Turning 78</div>
+                                </div>
+                                <div class="days-badge">13 days</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 48px;">
+                        <button class="btn btn-primary">📅 Export to Calendar</button>
+                        <button class="btn btn-secondary">🔔 Set Reminders</button>
+                    </div>
+
+                    <!-- Month Selector -->
+                    <div style="border-top: 1px solid var(--border-color); padding-top: 32px; transition: border-color 0.3s ease;">
+                        <h3 style="font-family: 'Playfair Display', serif; font-size: 24px; margin-bottom: 20px; color: var(--text-primary); transition: color 0.3s ease;">Browse All Months</h3>
+                        <div class="month-selector" id="monthSelector">
+                            <button class="month-btn active" data-month="january" onclick="switchMonth('january')">
+                                January <span class="count">(4)</span>
+                            </button>
+                            <button class="month-btn" data-month="february" onclick="switchMonth('february')">
+                                February <span class="count">(2)</span>
+                            </button>
+                            <button class="month-btn" data-month="march" onclick="switchMonth('march')">
+                                March <span class="count">(1)</span>
+                            </button>
+                            <button class="month-btn" data-month="april" onclick="switchMonth('april')">
+                                April <span class="count">(0)</span>
+                            </button>
+                            <button class="month-btn" data-month="may" onclick="switchMonth('may')">
+                                May <span class="count">(2)</span>
+                            </button>
+                            <button class="month-btn" data-month="june" onclick="switchMonth('june')">
+                                June <span class="count">(1)</span>
+                            </button>
+                            <button class="month-btn" data-month="july" onclick="switchMonth('july')">
+                                July <span class="count">(1)</span>
+                            </button>
+                            <button class="month-btn" data-month="august" onclick="switchMonth('august')">
+                                August <span class="count">(0)</span>
+                            </button>
+                            <button class="month-btn" data-month="september" onclick="switchMonth('september')">
+                                September <span class="count">(1)</span>
+                            </button>
+                            <button class="month-btn" data-month="october" onclick="switchMonth('october')">
+                                October <span class="count">(1)</span>
+                            </button>
+                            <button class="month-btn" data-month="november" onclick="switchMonth('november')">
+                                November <span class="count">(1)</span>
+                            </button>
+                            <button class="month-btn" data-month="december" onclick="switchMonth('december')">
+                                December <span class="count">(1)</span>
+                            </button>
+                        </div>
+
+                        <!-- Month Detail View -->
+                        <div style="margin-top: 32px;">
+                            <h3 style="font-family: 'Playfair Display', serif; font-size: 24px; margin-bottom: 24px; color: var(--text-primary); transition: color 0.3s ease;" id="monthTitle">January 2026</h3>
+                            <div class="birthday-grid" id="birthdayGrid">
+                                <div class="birthday-card today">
+                                    <div class="birthday-avatar">A</div>
+                                    <div class="birthday-info">
+                                        <div class="birthday-name">Anseli Medina</div>
+                                        <div class="birthday-date">January 15 • Turning 34</div>
+                                    </div>
+                                    <div class="days-badge today">TODAY!</div>
+                                </div>
+
+                                <div class="birthday-card">
+                                    <div class="birthday-avatar">M</div>
+                                    <div class="birthday-info">
+                                        <div class="birthday-name">Maria Medina</div>
+                                        <div class="birthday-date">January 22 • Turning 38</div>
+                                    </div>
+                                    <div class="days-badge">7 days</div>
+                                </div>
+
+                                <div class="birthday-card">
+                                    <div class="birthday-avatar">C</div>
+                                    <div class="birthday-info">
+                                        <div class="birthday-name">Carmen Medina</div>
+                                        <div class="birthday-date">January 28 • Turning 78</div>
+                                    </div>
+                                    <div class="days-badge">13 days</div>
+                                </div>
+                                
+                                <div class="birthday-card" style="border-style: dashed;">
+                                    <div class="birthday-avatar" style="background: linear-gradient(135deg, #C8D5B9, #B8956A);">🐕</div>
+                                    <div class="birthday-info">
+                                        <div class="birthday-name">Max <span style="font-size: 12px; color: var(--aged-gold);">🐾</span></div>
+                                        <div class="birthday-date">January 31 • Turning 8</div>
+                                    </div>
+                                    <div class="days-badge">16 days</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MAP/LOCATIONS SECTION -->
+            <section class="page-section" id="map">
+                <div class="page-header">
+                    <h1 class="page-title">🗺️ Family Locations</h1>
+                    <p class="page-subtitle">See where your family lives around the world • 5 cities • 3 countries</p>
+                </div>
+
+                <div class="page-content">
+                    <!-- Info Box -->
+                    <div style="background: rgba(74, 93, 79, 0.05); border-left: 4px solid var(--forest-green); padding: 20px; border-radius: 8px; margin-bottom: 32px; transition: all 0.3s ease;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                            <span style="font-size: 24px;">📍</span>
+                            <div style="font-weight: 600; color: var(--text-primary); transition: color 0.3s ease;">Automatic Location Mapping</div>
+                        </div>
+                        <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; transition: color 0.3s ease;">
+                            Just enter city names like "New York City", "Santiago, Dominican Republic", or "Miami" - the app automatically finds coordinates and drops pins on the map! Click any pin or location card to see who lives there.
+                        </div>
+                    </div>
+
+                    <!-- Map Container -->
+                    <div class="map-container">
+                        <div class="map-placeholder">
+                            <!-- Simulated world map background -->
+                            <svg width="100%" height="100%" viewBox="0 0 1000 500" style="position: absolute; top: 0; left: 0; opacity: 0.1;">
+                                <path d="M100,200 Q200,150 300,200 T500,200 T700,200 Q800,250 900,200" stroke="currentColor" fill="none" stroke-width="1"/>
+                                <path d="M150,300 Q250,250 350,300 T550,300 T750,300 Q850,350 950,300" stroke="currentColor" fill="none" stroke-width="1"/>
+                            </svg>
+                            
+                            <!-- Location Markers -->
+                            <!-- California (Jorge, Anseli, Maria) -->
+                            <div class="map-marker" data-count="3" style="top: 35%; left: 15%;" title="California"></div>
+                            
+                            <!-- New York (Roberto, Carmen) -->
+                            <div class="map-marker" data-count="2" style="top: 30%; left: 25%;" title="New York"></div>
+                            
+                            <!-- Miami (Luis, Sofia) -->
+                            <div class="map-marker" data-count="2" style="top: 50%; left: 24%;" title="Miami"></div>
+                            
+                            <!-- Mexico (Grandparents) -->
+                            <div class="map-marker" data-count="4" style="top: 45%; left: 12%;" title="Mexico"></div>
+                            
+                            <!-- Dominican Republic (Diego, Isabella) -->
+                            <div class="map-marker" data-count="2" style="top: 48%; left: 32%;" title="Dominican Republic"></div>
+
+                            <div style="position: absolute; bottom: 20px; right: 20px; background: rgba(255,255,255,0.9); padding: 12px 16px; border-radius: 8px; font-size: 12px; color: var(--charcoal); box-shadow: var(--soft-shadow);">
+                                <div style="font-weight: 600; margin-bottom: 4px;">Map Legend</div>
+                                <div>📍 Number = Family members in location</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Location List -->
+                    <h3 style="font-family: 'Playfair Display', serif; font-size: 28px; margin-bottom: 24px; color: var(--text-primary); transition: color 0.3s ease;">All Locations</h3>
+                    
+                    <div class="location-list">
+                        <!-- California -->
+                        <div class="location-card">
+                            <div class="location-header">
+                                <div class="location-flag">🇺🇸</div>
+                                <div class="location-info">
+                                    <div class="location-name">California</div>
+                                    <div class="location-country">United States</div>
+                                </div>
+                                <div class="location-count">3</div>
+                            </div>
+                            <div class="location-members">
+                                <div class="member-chip">Jorge</div>
+                                <div class="member-chip">Anseli</div>
+                                <div class="member-chip">Maria</div>
+                            </div>
+                        </div>
+
+                        <!-- New York -->
+                        <div class="location-card">
+                            <div class="location-header">
+                                <div class="location-flag">🇺🇸</div>
+                                <div class="location-info">
+                                    <div class="location-name">New York City</div>
+                                    <div class="location-country">United States</div>
+                                </div>
+                                <div class="location-count">2</div>
+                            </div>
+                            <div class="location-members">
+                                <div class="member-chip">Roberto</div>
+                                <div class="member-chip">Carmen</div>
+                            </div>
+                        </div>
+
+                        <!-- Miami -->
+                        <div class="location-card">
+                            <div class="location-header">
+                                <div class="location-flag">🇺🇸</div>
+                                <div class="location-info">
+                                    <div class="location-name">Miami</div>
+                                    <div class="location-country">United States</div>
+                                </div>
+                                <div class="location-count">2</div>
+                            </div>
+                            <div class="location-members">
+                                <div class="member-chip">Luis</div>
+                                <div class="member-chip">Sofia</div>
+                            </div>
+                        </div>
+
+                        <!-- Mexico City -->
+                        <div class="location-card">
+                            <div class="location-header">
+                                <div class="location-flag">🇲🇽</div>
+                                <div class="location-info">
+                                    <div class="location-name">Mexico City</div>
+                                    <div class="location-country">Mexico</div>
+                                </div>
+                                <div class="location-count">4</div>
+                            </div>
+                            <div class="location-members">
+                                <div class="member-chip">Antonio</div>
+                                <div class="member-chip">Guadalupe</div>
+                                <div class="member-chip">Pedro</div>
+                                <div class="member-chip">Rosa</div>
+                            </div>
+                        </div>
+
+                        <!-- Santiago, DR -->
+                        <div class="location-card">
+                            <div class="location-header">
+                                <div class="location-flag">🇩🇴</div>
+                                <div class="location-info">
+                                    <div class="location-name">Santiago</div>
+                                    <div class="location-country">Dominican Republic</div>
+                                </div>
+                                <div class="location-count">2</div>
+                            </div>
+                            <div class="location-members">
+                                <div class="member-chip">Diego</div>
+                                <div class="member-chip">Isabella</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats at Bottom -->
+                    <div class="quick-stats" style="margin-top: 48px;">
+                        <div class="stat-box">
+                            <div class="stat-number">5</div>
+                            <div class="stat-label">Cities</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">3</div>
+                            <div class="stat-label">Countries</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">4,500</div>
+                            <div class="stat-label">Miles Apart</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">2</div>
+                            <div class="stat-label">Time Zones</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PROFILE SECTION -->
+            <section class="page-section" id="profile">
+                <div class="page-header">
+                    <h1 class="page-title">My Profile</h1>
+                    <p class="page-subtitle">Manage your information and family connections</p>
+                </div>
+
+                <div class="page-content">
+                    <!-- Photo Upload Info Box -->
+                    <div style="background: rgba(184, 149, 106, 0.1); border-left: 4px solid var(--aged-gold); padding: 20px; border-radius: 8px; margin-bottom: 32px; transition: all 0.3s ease;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                            <span style="font-size: 24px;">📸</span>
+                            <div style="font-weight: 600; color: var(--text-primary); transition: color 0.3s ease;">Add Your Photo</div>
+                        </div>
+                        <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; transition: color 0.3s ease;">
+                            Upload a clear photo of your face. It will appear on your family tree card, birthday calendar, and throughout the app. <strong>Hover over your photo circle and click "📷 Upload Photo"</strong> to get started. Best with square format, at least 200x200px.
+                        </div>
+                    </div>
+
+                    <div class="profile-container">
+                        <div class="profile-header">
+                            <div class="profile-photo-large" onclick="alert('Photo upload: Select from your device or take a new photo.\n\nAccepted: JPG, PNG\nRecommended: 400x400px or larger\nMax size: 5MB')">
+                                J
+                                <div class="photo-upload-overlay">📷 Upload Photo</div>
+                            </div>
+                            <h2 class="profile-name-large">Jorge Medina</h2>
+                            <div class="profile-role-badge">👑 Family Admin</div>
+                            <p class="profile-bio">Commercial real estate project manager with a passion for building and technology. Currently developing tools to streamline construction workflows while balancing family life in California.</p>
+                        </div>
+
+                        <div class="profile-section">
+                            <h3 class="profile-section-title">Personal Information</h3>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <div class="info-label">Full Name</div>
+                                    <div class="info-value">Jorge Medina</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Date of Birth</div>
+                                    <div class="info-value">February 2, 1977 (Age 48)</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Location</div>
+                                    <div class="info-value">🇺🇸 California, United States</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Email</div>
+                                    <div class="info-value">jorge@example.com</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-section">
+                            <h3 class="profile-section-title">Family Connections</h3>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <div class="info-label">Spouse</div>
+                                    <div class="info-value">Anseli Medina</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Parents</div>
+                                    <div class="info-value">Jorge Medina Sr.</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Siblings</div>
+                                    <div class="info-value">Maria Medina</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Generation</div>
+                                    <div class="info-value">3rd Generation</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-section">
+                            <h3 class="profile-section-title">Godparent Connections</h3>
+                            <div style="background: rgba(74, 93, 79, 0.05); border-left: 4px solid var(--forest-green); padding: 16px; border-radius: 8px; margin-bottom: 16px; transition: all 0.3s ease;">
+                                <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; transition: color 0.3s ease;">
+                                    Godparents are special spiritual guardians chosen for children. These sacred relationships create lifelong bonds beyond blood family.
+                                </div>
+                            </div>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <div class="info-label">My Godparents</div>
+                                    <div class="info-value">Roberto Medina, Carmen Medina</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">My Godchildren</div>
+                                    <div class="info-value">Emma Medina, Diego Medina Jr.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                            <button class="btn btn-primary">✏️ Edit Profile</button>
+                            <button class="btn btn-secondary">📸 Change Photo</button>
+                            <button class="btn btn-secondary">🔗 Share My Profile</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PHOTOS SECTION -->
+            <section class="page-section" id="photos">
+                <div class="page-header">
+                    <h1 class="page-title">📸 Family Photos</h1>
+                    <p class="page-subtitle">47 photos shared across the family</p>
+                </div>
+
+                <div class="page-content">
+                    <div style="background: white; border-radius: 16px; padding: 80px; text-align: center; box-shadow: var(--soft-shadow);">
+                        <div style="font-size: 64px; margin-bottom: 16px; opacity: 0.3;">📸</div>
+                        <h3 style="font-family: 'Playfair Display', serif; font-size: 24px; margin-bottom: 8px;">Photo Gallery Coming Soon</h3>
+                        <p style="color: var(--warm-gray);">Share and explore family memories</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MEMORIES SECTION -->
+            <section class="page-section" id="memories">
+                <div class="page-header">
+                    <h1 class="page-title">💭 Family Memories</h1>
+                    <p class="page-subtitle">Stories and moments from our family</p>
+                </div>
+
+                <div class="page-content">
+                    <div style="background: white; border-radius: 16px; padding: 80px; text-align: center; box-shadow: var(--soft-shadow);">
+                        <div style="font-size: 64px; margin-bottom: 16px; opacity: 0.3;">💭</div>
+                        <h3 style="font-family: 'Playfair Display', serif; font-size: 24px; margin-bottom: 8px;">Memories Section Coming Soon</h3>
+                        <p style="color: var(--warm-gray);">Share stories, anecdotes, and cherished moments</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- INVITATIONS SECTION -->
+            <section class="page-section" id="invitations">
+                <div class="page-header">
+                    <h1 class="page-title">✉️ Manage Invitations</h1>
+                    <p class="page-subtitle">Send and track family member invitations</p>
+                </div>
+
+                <div class="page-content">
+                    <div style="background: white; border-radius: 16px; padding: 48px; box-shadow: var(--soft-shadow); margin-bottom: 24px;">
+                        <h3 style="font-family: 'Playfair Display', serif; font-size: 24px; margin-bottom: 24px;">Invitation Status</h3>
+                        <div style="display: grid; gap: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(184, 149, 106, 0.05); border-radius: 8px;">
+                                <div>
+                                    <div style="font-weight: 600;">Maria Medina</div>
+                                    <div style="font-size: 14px; color: var(--warm-gray);">Sister • Invited Jan 10</div>
+                                </div>
+                                <div style="color: var(--aged-gold); font-size: 14px; font-weight: 600;">📧 Pending</div>
+                            </div>
+                            <div style="display: flex; justify-space-between; align-items: center; padding: 16px; background: rgba(74, 93, 79, 0.05); border-radius: 8px;">
+                                <div>
+                                    <div style="font-weight: 600;">Roberto Medina</div>
+                                    <div style="font-size: 14px; color: var(--warm-gray);">Grandfather • Joined Jan 5</div>
+                                </div>
+                                <div style="color: var(--forest-green); font-size: 14px; font-weight: 600;">✓ Completed</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary">+ Invite New Family Member</button>
+                </div>
+            </section>
+
+            <!-- SETTINGS SECTION -->
+            <section class="page-section" id="settings">
+                <div class="page-header">
+                    <h1 class="page-title">⚙️ Settings</h1>
+                    <p class="page-subtitle">Manage your family tree preferences</p>
+                </div>
+
+                <div class="page-content">
+                    <div class="settings-grid">
+                        <div class="setting-card">
+                            <div class="setting-header">
+                                <div>
+                                    <div class="setting-title">Birthday Reminders</div>
+                                    <div class="setting-description">Receive notifications 7 days before family birthdays</div>
+                                </div>
+                                <div class="toggle-switch active" onclick="toggleSetting(this)"></div>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-header">
+                                <div>
+                                    <div class="setting-title">Email Notifications</div>
+                                    <div class="setting-description">Get updates when family members join or add photos</div>
+                                </div>
+                                <div class="toggle-switch active" onclick="toggleSetting(this)"></div>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-header">
+                                <div>
+                                    <div class="setting-title">Profile Privacy</div>
+                                    <div class="setting-description">Allow family members to see your full profile details</div>
+                                </div>
+                                <div class="toggle-switch active" onclick="toggleSetting(this)"></div>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-header">
+                                <div>
+                                    <div class="setting-title">Birthday Age Visibility</div>
+                                    <div class="setting-description">Show your age on birthday calendar</div>
+                                </div>
+                                <div class="toggle-switch" onclick="toggleSetting(this)"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Export/Import Section -->
+                    <div style="margin-top: 48px;">
+                        <h3 style="font-family: 'Playfair Display', serif; font-size: 28px; margin-bottom: 16px; color: var(--text-primary); transition: color 0.3s ease;">📦 Data Management</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 24px; transition: color 0.3s ease;">Export your family tree data for backup or import data from previous exports. Useful for upgrades and data portability.</p>
+                        
+                        <div class="settings-grid">
+                            <div class="setting-card" style="grid-column: 1 / -1;">
+                                <div style="margin-bottom: 24px;">
+                                    <div class="setting-title" style="margin-bottom: 8px;">📤 Export Family Tree</div>
+                                    <div class="setting-description" style="margin-bottom: 16px;">
+                                        Download your complete family tree data. Includes all members, relationships, photos, pets, and settings. Keep this as a backup or use it to migrate to future versions.
+                                    </div>
+                                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                                        <button class="btn btn-primary" onclick="exportAsJSON()">
+                                            📄 Export as JSON
+                                        </button>
+                                        <button class="btn btn-secondary" onclick="exportAsCSV()">
+                                            📊 Export as CSV
+                                        </button>
+                                        <button class="btn btn-secondary" onclick="exportPhotos()">
+                                            📸 Export Photos (.zip)
+                                        </button>
+                                    </div>
+                                    <div style="margin-top: 12px; font-size: 13px; color: var(--text-secondary); transition: color 0.3s ease;">
+                                        💡 Tip: Export monthly as a backup. JSON includes everything, CSV is good for spreadsheets.
+                                    </div>
+                                </div>
+
+                                <div style="border-top: 1px solid var(--border-color); padding-top: 24px; transition: border-color 0.3s ease;">
+                                    <div class="setting-title" style="margin-bottom: 8px;">📥 Import Family Tree</div>
+                                    <div class="setting-description" style="margin-bottom: 16px;">
+                                        Import data from a previous export or migrate from another family tree app. This will merge with existing data (no duplicates).
+                                    </div>
+                                    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                                        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleFileImport(event)">
+                                        <button class="btn btn-primary" onclick="document.getElementById('importFile').click()">
+                                            📂 Choose File to Import
+                                        </button>
+                                        <span id="importFileName" style="font-size: 14px; color: var(--text-secondary); transition: color 0.3s ease;"></span>
+                                    </div>
+                                    <div style="margin-top: 12px; padding: 12px; background: rgba(184, 149, 106, 0.1); border-radius: 8px; border-left: 3px solid var(--aged-gold);">
+                                        <div style="font-size: 13px; color: var(--text-primary); line-height: 1.6; transition: color 0.3s ease;">
+                                            <strong>⚠️ Import Safety:</strong> Your existing data is safe. Import will add new members and merge data intelligently. Admin review required for conflicts.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Data Statistics Card -->
+                            <div class="setting-card">
+                                <div class="setting-title" style="margin-bottom: 16px;">📊 Your Data</div>
+                                <div style="display: grid; gap: 12px;">
+                                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color); transition: border-color 0.3s ease;">
+                                        <span style="color: var(--text-secondary); font-size: 14px; transition: color 0.3s ease;">Family Members</span>
+                                        <span style="font-weight: 600; color: var(--text-primary); transition: color 0.3s ease;">15</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color); transition: border-color 0.3s ease;">
+                                        <span style="color: var(--text-secondary); font-size: 14px; transition: color 0.3s ease;">Photos Uploaded</span>
+                                        <span style="font-weight: 600; color: var(--text-primary); transition: color 0.3s ease;">47</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color); transition: border-color 0.3s ease;">
+                                        <span style="color: var(--text-secondary); font-size: 14px; transition: color 0.3s ease;">Pets</span>
+                                        <span style="font-weight: 600; color: var(--text-primary); transition: color 0.3s ease;">3</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                                        <span style="color: var(--text-secondary); font-size: 14px; transition: color 0.3s ease;">Total Storage Used</span>
+                                        <span style="font-weight: 600; color: var(--aged-gold);">2.3 GB</span>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-secondary); transition: all 0.3s ease;">
+                                    Last backup: Never<br>
+                                    <button class="btn btn-secondary" style="margin-top: 8px; font-size: 13px; padding: 8px 16px;" onclick="alert('Backup scheduled for tonight at midnight')">
+                                        Schedule Auto-Backup
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Export History Card -->
+                            <div class="setting-card">
+                                <div class="setting-title" style="margin-bottom: 16px;">📜 Export History</div>
+                                <div style="display: grid; gap: 12px;">
+                                    <div style="padding: 12px; background: var(--bg-tertiary); border-radius: 8px; font-size: 13px; transition: background 0.3s ease;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                            <span style="font-weight: 600; color: var(--text-primary); transition: color 0.3s ease;">rodriguez-family-jan-2026.json</span>
+                                            <span style="color: var(--text-secondary); transition: color 0.3s ease;">2.4 MB</span>
+                                        </div>
+                                        <div style="color: var(--text-secondary); font-size: 12px; transition: color 0.3s ease;">
+                                            Jan 10, 2026 at 3:45 PM
+                                        </div>
+                                    </div>
+                                    <div style="padding: 12px; background: var(--bg-tertiary); border-radius: 8px; font-size: 13px; transition: background 0.3s ease;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                            <span style="font-weight: 600; color: var(--text-primary); transition: color 0.3s ease;">rodriguez-family-dec-2025.json</span>
+                                            <span style="color: var(--text-secondary); transition: color 0.3s ease;">2.1 MB</span>
+                                        </div>
+                                        <div style="color: var(--text-secondary); font-size: 12px; transition: color 0.3s ease;">
+                                            Dec 15, 2025 at 10:22 AM
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-secondary); text-align: center; transition: all 0.3s ease;">
+                                    <a href="#" style="color: var(--aged-gold); text-decoration: none;" onclick="alert('View all 5 exports'); return false;">View all exports →</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // Navigation
+        function navigateTo(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.page-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+
+            // Update active nav item
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Close mobile menu if open
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('mobile-open');
+            }
+        }
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            document.getElementById('sidebar').classList.toggle('mobile-open');
+        }
+
+        // Settings toggle
+        function toggleSetting(element) {
+            element.classList.toggle('active');
+        }
+
+        // Dark mode toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeSwitch = document.getElementById('themeSwitch');
+            const themeIcon = document.getElementById('themeIcon');
+            const themeLabel = document.getElementById('themeLabel');
+            
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            themeSwitch.classList.toggle('active');
+            
+            if (newTheme === 'dark') {
+                themeIcon.textContent = '☀️';
+                themeLabel.textContent = 'Light Mode';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeIcon.textContent = '🌙';
+                themeLabel.textContent = 'Dark Mode';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Load saved theme preference on page load (defaults to dark mode)
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark'; // Changed default to dark
+            const html = document.documentElement;
+            const themeSwitch = document.getElementById('themeSwitch');
+            const themeIcon = document.getElementById('themeIcon');
+            const themeLabel = document.getElementById('themeLabel');
+            
+            if (savedTheme === 'dark') {
+                html.setAttribute('data-theme', 'dark');
+                themeSwitch.classList.add('active');
+                themeIcon.textContent = '☀️';
+                themeLabel.textContent = 'Light Mode';
+            } else {
+                // Light mode
+                html.setAttribute('data-theme', 'light');
+                themeSwitch.classList.remove('active');
+                themeIcon.textContent = '🌙';
+                themeLabel.textContent = 'Dark Mode';
+            }
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            
+            if (window.innerWidth <= 768 && 
+                !sidebar.contains(event.target) && 
+                !menuBtn.contains(event.target) &&
+                sidebar.classList.contains('mobile-open')) {
+                sidebar.classList.remove('mobile-open');
+            }
+        });
+
+        // Prevent clicks inside nav items from bubbling
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
+
+        // Export/Import Functions
+        
+        // Month switching for birthdays
+        const birthdayData = {
+            january: {
+                title: 'January 2026',
+                birthdays: [
+                    { avatar: 'A', name: 'Anseli Medina', date: 'January 15', age: 34, days: 'TODAY!', isToday: true },
+                    { avatar: 'M', name: 'Maria Medina', date: 'January 22', age: 38, days: '7 days' },
+                    { avatar: 'C', name: 'Carmen Medina', date: 'January 28', age: 78, days: '13 days' },
+                    { avatar: '🐕', name: 'Max 🐾', date: 'January 31', age: 8, days: '16 days', isPet: true }
+                ]
+            },
+            february: {
+                title: 'February 2026',
+                birthdays: [
+                    { avatar: 'R', name: 'Roberto Medina', date: 'February 8', age: 81, days: '24 days' },
+                    { avatar: 'L', name: 'Luis Medina', date: 'February 18', age: 51, days: '34 days' }
+                ]
+            },
+            march: {
+                title: 'March 2026',
+                birthdays: [
+                    { avatar: 'E', name: 'Emma Medina', date: 'March 12', age: 11, days: '56 days' }
+                ]
+            },
+            april: {
+                title: 'April 2026',
+                birthdays: []
+            },
+            may: {
+                title: 'May 2026',
+                birthdays: [
+                    { avatar: 'J', name: 'Jorge Medina', date: 'May 15', age: 36, days: '120 days' },
+                    { avatar: 'J', name: 'Jorge Medina Sr.', date: 'May 23', age: 56, days: '128 days' }
+                ]
+            },
+            june: {
+                title: 'June 2026',
+                birthdays: [
+                    { avatar: '😺', name: 'Luna 🐾', date: 'June 5', age: 6, days: '141 days', isPet: true }
+                ]
+            },
+            july: {
+                title: 'July 2026',
+                birthdays: [
+                    { avatar: 'S', name: 'Sofia Medina', date: 'July 10', age: 36, days: '176 days' }
+                ]
+            },
+            august: {
+                title: 'August 2026',
+                birthdays: []
+            },
+            september: {
+                title: 'September 2026',
+                birthdays: [
+                    { avatar: 'D', name: 'Diego Medina', date: 'September 3', age: 42, days: '231 days' }
+                ]
+            },
+            october: {
+                title: 'October 2026',
+                birthdays: [
+                    { avatar: 'I', name: 'Isabella Medina', date: 'October 20', age: 29, days: '278 days' }
+                ]
+            },
+            november: {
+                title: 'November 2026',
+                birthdays: [
+                    { avatar: 'G', name: 'Gabriel Medina', date: 'November 8', age: 34, days: '297 days' }
+                ]
+            },
+            december: {
+                title: 'December 2026',
+                birthdays: [
+                    { avatar: 'V', name: 'Victoria Medina', date: 'December 25', age: 27, days: '344 days' }
+                ]
+            }
+        };
+
+        function switchMonth(month) {
+            // Update active button
+            document.querySelectorAll('.month-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-month') === month) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Update title
+            document.getElementById('monthTitle').textContent = birthdayData[month].title;
+
+            // Update birthday grid
+            const grid = document.getElementById('birthdayGrid');
+            const monthData = birthdayData[month];
+
+            if (monthData.birthdays.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 48px; color: var(--text-secondary); transition: color 0.3s ease;">
+                        <div style="font-size: 64px; margin-bottom: 16px; opacity: 0.3;">🎈</div>
+                        <p style="font-size: 16px;">No birthdays this month</p>
+                    </div>
+                `;
+            } else {
+                grid.innerHTML = monthData.birthdays.map(bd => `
+                    <div class="birthday-card ${bd.isToday ? 'today' : ''}" ${bd.isPet ? 'style="border-style: dashed;"' : ''}>
+                        <div class="birthday-avatar" ${bd.isPet ? 'style="background: linear-gradient(135deg, #C8D5B9, #B8956A);"' : ''}>${bd.avatar}</div>
+                        <div class="birthday-info">
+                            <div class="birthday-name">${bd.name}</div>
+                            <div class="birthday-date">${bd.date} • Turning ${bd.age}</div>
+                        </div>
+                        <div class="days-badge ${bd.isToday ? 'today' : ''}">${bd.days}</div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        function exportAsJSON() {
+            // Simulated family tree data export
+            const familyData = {
+                exportDate: new Date().toISOString(),
+                exportVersion: "1.0",
+                family: {
+                    name: "Medina Family",
+                    createdBy: "Jorge Medina",
+                    createdDate: "2026-01-10"
+                },
+                members: [
+                    {
+                        id: "jorge_123",
+                        name: "Jorge Medina",
+                        role: "admin",
+                        birthDate: "1990-05-15",
+                        location: "California",
+                        relationships: {
+                            spouse: "anseli_456",
+                            parents: ["jorge_sr_789"],
+                            siblings: ["maria_012"]
+                        }
+                    },
+                    // ... more members
+                ],
+                pets: [
+                    {
+                        id: "max_dog_123",
+                        name: "Max",
+                        type: "dog",
+                        breed: "Golden Retriever",
+                        birthDate: "2018-02-14",
+                        owners: ["jorge_123", "anseli_456"]
+                    }
+                    // ... more pets
+                ],
+                settings: {
+                    birthdayReminders: true,
+                    emailNotifications: true,
+                    theme: "dark"
+                }
+            };
+
+            // Convert to JSON and download
+            const dataStr = JSON.stringify(familyData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `rodriguez-family-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+
+            alert('✅ Family tree exported as JSON!\n\nThis file contains:\n• All 15 family members\n• 3 pets\n• 47 photo references\n• All relationships\n• Settings\n\nKeep this file safe as a backup!');
+        }
+
+        function exportAsCSV() {
+            // Simulated CSV export
+            const csvContent = `Name,Birth Date,Location,Relationship,Email,Phone
+Jorge Medina,1990-05-15,California,Admin,jorge@email.com,555-0101
+Anseli Medina,1992-01-15,California,Spouse,anseli@email.com,555-0102
+Maria Medina,1988-03-22,Texas,Sister,maria@email.com,555-0103
+Roberto Medina,1945-02-08,Mexico City,Grandfather,roberto@email.com,555-0104
+Carmen Medina,1948-01-28,Mexico City,Grandmother,carmen@email.com,555-0105`;
+
+            const dataBlob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `rodriguez-family-${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            URL.revokeObjectURL(url);
+
+            alert('✅ Family tree exported as CSV!\n\nGreat for:\n• Opening in Excel/Sheets\n• Creating mailing lists\n• Printing contact lists\n\nNote: CSV doesn\'t include photos, use JSON for complete backup.');
+        }
+
+        function exportPhotos() {
+            alert('📸 Photo Export Feature\n\nThis would:\n1. Collect all 47 family photos\n2. Organize by person/event\n3. Create a .zip file\n4. Download (~150 MB)\n\nComing in next update!');
+        }
+
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById('importFileName').textContent = `Selected: ${file.name}`;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    // Validate data structure
+                    if (!importedData.family || !importedData.members) {
+                        throw new Error('Invalid file format');
+                    }
+
+                    // Show import summary
+                    const summary = `
+📥 Import Preview
+
+File: ${file.name}
+Export Date: ${new Date(importedData.exportDate).toLocaleDateString()}
+Version: ${importedData.exportVersion}
+
+Will Import:
+• ${importedData.members?.length || 0} family members
+• ${importedData.pets?.length || 0} pets
+• Settings and preferences
+
+Action: Merge with existing data (no duplicates)
+
+Proceed with import?`;
+
+                    if (confirm(summary)) {
+                        // Simulate import process
+                        setTimeout(() => {
+                            alert('✅ Import Complete!\n\nAdded:\n• 3 new family members\n• 1 new pet\n• Updated 2 existing profiles\n\nAll changes logged. Check the family tree!');
+                            
+                            // Reset file input
+                            event.target.value = '';
+                            document.getElementById('importFileName').textContent = '';
+                        }, 1500);
+                    }
+                } catch (error) {
+                    alert('❌ Import Failed\n\nError: Invalid JSON file\n\nPlease select a valid family tree export file (.json)');
+                    event.target.value = '';
+                    document.getElementById('importFileName').textContent = '';
+                }
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
