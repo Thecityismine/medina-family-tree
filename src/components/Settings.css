@@ -290,8 +290,10 @@
 }
 
 .export-icon {
-  font-size: 40px;
+  font-size: 18px;
   flex-shrink: 0;
+  font-weight: 600;
+  color: #B8956A;
 }
 
 .export-info {
@@ -325,65 +327,6 @@
 
 .export-button:hover {
   background: #A07D52;
-}
-
-.import-section {
-  margin-bottom: 40px;
-}
-
-.import-card {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 24px;
-  background: #1C1C1E;
-  border: 1px solid #2C2C2E;
-  border-radius: 12px;
-}
-
-.import-input {
-  width: 100%;
-  padding: 12px;
-  background: #000000;
-  border: 1px solid #2C2C2E;
-  border-radius: 8px;
-  color: #F5F5F7;
-}
-
-.import-button {
-  width: fit-content;
-  padding: 12px 20px;
-  background: #B8956A;
-  color: #FFFFFF;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.import-button:hover:not(:disabled) {
-  background: #A07D52;
-}
-
-.import-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.import-note {
-  color: #8E8E93;
-  font-size: 13px;
-}
-
-.import-readonly {
-  padding: 16px;
-  border: 1px solid rgba(184, 149, 106, 0.3);
-  background: rgba(184, 149, 106, 0.08);
-  color: #B8956A;
-  border-radius: 8px;
-  font-size: 14px;
 }
 
 /* Data Stats */

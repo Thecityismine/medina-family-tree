@@ -25,6 +25,10 @@
   margin-bottom: 20px;
 }
 
+.form-row.single {
+  grid-template-columns: 1fr;
+}
+
 .form-group {
   display: flex;
   flex-direction: column;
@@ -38,7 +42,8 @@
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
   padding: 12px 16px;
   background: #2C2C2E;
   border: 1px solid #38383A;
@@ -49,7 +54,8 @@
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
   outline: none;
   border-color: #B8956A;
   background: #000000;
@@ -57,6 +63,12 @@
 
 .form-group input::placeholder {
   color: #8E8E93;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.5;
 }
 
 .form-group select {
@@ -124,6 +136,40 @@
   border-radius: 8px;
   margin-bottom: 20px;
   font-size: 14px;
+}
+
+.helper-text {
+  background: #2C2C2E;
+  border: 1px dashed #38383A;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #8E8E93;
+  font-size: 13px;
+}
+
+.checkbox-list {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #2C2C2E;
+  border-radius: 10px;
+  background: #1C1C1E;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #F5F5F7;
+  font-size: 14px;
+}
+
+.checkbox-item input {
+  width: 16px;
+  height: 16px;
+  accent-color: #B8956A;
 }
 
 @media (max-width: 768px) {

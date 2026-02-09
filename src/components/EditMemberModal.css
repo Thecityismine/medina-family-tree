@@ -77,7 +77,8 @@
 }
 
 .modal-content .form-group input,
-.modal-content .form-group select {
+.modal-content .form-group select,
+.modal-content .form-group textarea {
   width: 100%;
   padding: 12px 16px;
   background: #2C2C2E;
@@ -89,7 +90,8 @@
 }
 
 .modal-content .form-group input:focus,
-.modal-content .form-group select:focus {
+.modal-content .form-group select:focus,
+.modal-content .form-group textarea:focus {
   outline: none;
   border-color: #B8956A;
   background: #000000;
@@ -97,6 +99,12 @@
 
 .modal-content .form-group input::placeholder {
   color: #8E8E93;
+}
+
+.modal-content .form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.5;
 }
 
 .modal-content .form-group select {
@@ -114,6 +122,7 @@
   margin-top: 24px;
   padding-top: 24px;
   border-top: 1px solid #2C2C2E;
+  align-items: stretch;
 }
 
 .btn-cancel,
@@ -126,6 +135,11 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
 }
 
 .btn-cancel {
@@ -152,6 +166,50 @@
 .btn-save:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.helper-text {
+  background: #2C2C2E;
+  border: 1px dashed #38383A;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #8E8E93;
+  font-size: 13px;
+}
+
+.checkbox-list {
+  display: grid;
+  gap: 14px;
+  padding: 12px;
+  border: 1px solid #2C2C2E;
+  border-radius: 10px;
+  background: #111112;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #F5F5F7;
+  font-size: 14px;
+}
+
+.checkbox-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 1px solid #38383A;
+  box-shadow: none;
+  accent-color: #B8956A;
+}
+
+.checkbox-item span {
+  flex: 1;
+  line-height: 1.3;
 }
 
 @media (max-width: 600px) {

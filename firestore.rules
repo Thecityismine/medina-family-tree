@@ -1,39 +1,62 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
+    
+    // Helper function to check if user is admin
     function isAdmin() {
-      return isSignedIn() &&
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
-
+    
+    // Helper function to check if user owns the document
     function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+      return request.auth != null && request.auth.uid == userId;
     }
-
+    
+    // Users collection
     match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId) &&
-        request.resource.data.role == 'viewer';
-      allow update: if isAdmin() || (
-        isOwner(userId) &&
-        request.resource.data.role == resource.data.role
-      );
+      // Anyone authenticated can read users
+      allow read: if request.auth != null;
+      
+      // Only admins can create users
+      allow create: if isAdmin();
+      
+      // Users can update their own profile, admins can update anyone
+      allow update: if isOwner(userId) || isAdmin();
+      
+      // Only admins can delete users
       allow delete: if isAdmin();
     }
-
+    
+    // Family members collection
     match /members/{memberId} {
-      // Public read access for all visitors.
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
+      // Anyone authenticated can read members
+      allow read: if request.auth != null;
+      
+      // Only admins can create members
+      allow create: if isAdmin();
+      
+      // Members can update their own info, admins can update anyone
+      allow update: if (request.auth != null && 
+                       resource.data.userId == request.auth.uid) || 
+                       isAdmin();
+      
+      // Only admins can delete members
+      allow delete: if isAdmin();
     }
-
+    
+    // Invitations collection
     match /invitations/{invitationId} {
-      allow read, create, update, delete: if isAdmin();
+      // Anyone can read their own invitation by invitation code
+      allow read: if request.auth != null || 
+                     resource.data.invitationCode == request.query.code;
+      
+      // Only admins can create invitations
+      allow create: if isAdmin();
+      
+      // Only admins can update/delete invitations
+      allow update, delete: if isAdmin();
     }
   }
 }

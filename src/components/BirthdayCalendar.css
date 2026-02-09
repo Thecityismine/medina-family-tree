@@ -18,7 +18,6 @@
   font-size: 16px;
 }
 
-/* Stats Dashboard */
 .birthday-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -54,7 +53,6 @@
   color: #8E8E93;
 }
 
-/* Upcoming Section */
 .upcoming-section {
   margin-bottom: 48px;
 }
@@ -66,7 +64,6 @@
   margin-bottom: 24px;
 }
 
-/* Birthday Cards */
 .birthday-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -167,7 +164,6 @@
   }
 }
 
-/* Month Section */
 .month-section {
   margin-bottom: 32px;
 }
@@ -238,7 +234,6 @@
   font-size: 12px;
 }
 
-/* Month Detail */
 .month-detail {
   padding-top: 32px;
   border-top: 1px solid #2C2C2E;
@@ -266,7 +261,6 @@
   font-size: 16px;
 }
 
-/* Mobile Responsive */
 @media (max-width: 768px) {
   .birthday-stats {
     grid-template-columns: repeat(2, 1fr);

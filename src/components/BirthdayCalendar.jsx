@@ -1,4 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import {
+  calculateAge,
+  formatBirthDate,
+  getNextBirthdayDate,
+  parseBirthDate
+} from '../utils/birthdays';
 import './BirthdayCalendar.css';
 
 function BirthdayCalendar({ members }) {
@@ -32,25 +38,23 @@ function BirthdayCalendar({ members }) {
     let next30 = 0;
     let totalAge = 0;
     let validAges = 0;
+    let totalBirthdays = 0;
 
     members.forEach(member => {
-      if (!member.birthDate) return;
+      const birthDate = parseBirthDate(member.birthDate);
+      if (!birthDate) return;
 
-      const birthDate = new Date(member.birthDate);
-      const birthMonth = birthDate.getMonth();
+      totalBirthdays++;
 
-      // This month count
-      if (birthMonth === currentMonth) {
+      if (birthDate.getMonth() === currentMonth) {
         thisMonth++;
       }
 
-      // Next 30 days count
-      const nextBirthday = getNextBirthday(birthDate);
-      if (nextBirthday <= next30Days) {
+      const nextBirthday = getNextBirthdayDate(member.birthDate, today);
+      if (nextBirthday && nextBirthday <= next30Days) {
         next30++;
       }
 
-      // Calculate age
       const age = calculateAge(member.birthDate);
       if (age !== null) {
         totalAge += age;
@@ -61,22 +65,22 @@ function BirthdayCalendar({ members }) {
     setStats({
       thisMonth,
       next30Days: next30,
-      total: members.filter(m => m.birthDate).length,
+      total: totalBirthdays,
       averageAge: validAges > 0 ? Math.round(totalAge / validAges) : 0
     });
   };
 
   const getUpcomingBirthdays = () => {
     const today = new Date();
-    
+
     const upcoming = members
-      .filter(m => m.birthDate)
       .map(member => {
-        const birthDate = new Date(member.birthDate);
-        const nextBirthday = getNextBirthday(birthDate);
+        const nextBirthday = getNextBirthdayDate(member.birthDate, today);
+        if (!nextBirthday) return null;
+
         const daysUntil = Math.ceil((nextBirthday - today) / (1000 * 60 * 60 * 24));
         const age = calculateAge(member.birthDate);
-        
+
         return {
           ...member,
           nextBirthday,
@@ -84,6 +88,7 @@ function BirthdayCalendar({ members }) {
           turningAge: age !== null ? age + 1 : null
         };
       })
+      .filter(Boolean)
       .sort((a, b) => a.nextBirthday - b.nextBirthday)
       .slice(0, 3);
 
@@ -91,57 +96,31 @@ function BirthdayCalendar({ members }) {
   };
 
   const getMonthBirthdays = (month) => {
+    const today = new Date();
+
     const birthdays = members
-      .filter(m => {
-        if (!m.birthDate) return false;
-        const birthDate = new Date(m.birthDate);
-        return birthDate.getMonth() === month;
-      })
       .map(member => {
-        const birthDate = new Date(member.birthDate);
+        const birthDate = parseBirthDate(member.birthDate);
+        if (!birthDate || birthDate.getMonth() !== month) return null;
+
         const age = calculateAge(member.birthDate);
-        const today = new Date();
         const thisYear = new Date(today.getFullYear(), month, birthDate.getDate());
-        const daysUntil = Math.ceil((thisYear - today) / (1000 * 60 * 60 * 24));
-        
+        let daysUntil = Math.ceil((thisYear - today) / (1000 * 60 * 60 * 24));
+        if (daysUntil < 0) {
+          daysUntil += 365;
+        }
+
         return {
           ...member,
           day: birthDate.getDate(),
-          daysUntil: daysUntil >= 0 ? daysUntil : daysUntil + 365,
+          daysUntil,
           turningAge: age !== null ? age + 1 : null
         };
       })
+      .filter(Boolean)
       .sort((a, b) => a.day - b.day);
 
     setMonthBirthdays(birthdays);
-  };
-
-  const getNextBirthday = (birthDate) => {
-    const today = new Date();
-    const thisYear = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
-    
-    if (thisYear < today) {
-      return new Date(today.getFullYear() + 1, birthDate.getMonth(), birthDate.getDate());
-    }
-    return thisYear;
-  };
-
-  const calculateAge = (birthDateString) => {
-    if (!birthDateString) return null;
-    const today = new Date();
-    const birthDate = new Date(birthDateString);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
-  };
-
-  const formatDate = (birthDate) => {
-    if (!birthDate) return '';
-    const date = new Date(birthDate);
-    return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
   };
 
   const getDaysBadge = (daysUntil) => {
@@ -153,21 +132,19 @@ function BirthdayCalendar({ members }) {
   };
 
   const getMonthCount = (month) => {
-    return members.filter(m => {
-      if (!m.birthDate) return false;
-      const birthDate = new Date(m.birthDate);
-      return birthDate.getMonth() === month;
+    return members.filter(member => {
+      const birthDate = parseBirthDate(member.birthDate);
+      return birthDate ? birthDate.getMonth() === month : false;
     }).length;
   };
 
   return (
     <div className="birthday-calendar">
       <div className="calendar-header">
-        <h2>🎂 Family Birthdays</h2>
+        <h2>Family Birthdays</h2>
         <p className="calendar-subtitle">Never miss a celebration</p>
       </div>
 
-      {/* Stats Dashboard */}
       <div className="birthday-stats">
         <div className="stat-card">
           <div className="stat-number">{stats.thisMonth}</div>
@@ -187,10 +164,9 @@ function BirthdayCalendar({ members }) {
         </div>
       </div>
 
-      {/* Coming Up Soon */}
       {upcomingBirthdays.length > 0 && (
         <div className="upcoming-section">
-          <h3>🎉 Coming Up Soon</h3>
+          <h3>Coming Up Soon</h3>
           <div className="birthday-grid">
             {upcomingBirthdays.map(member => {
               const badge = getDaysBadge(member.daysUntil);
@@ -206,8 +182,8 @@ function BirthdayCalendar({ members }) {
                   <div className="birthday-info">
                     <div className="birthday-name">{member.name}</div>
                     <div className="birthday-date">
-                      {formatDate(member.birthDate)}
-                      {member.turningAge && ` • Turning ${member.turningAge}`}
+                      {formatBirthDate(member.birthDate)}
+                      {member.turningAge && ` - Turning ${member.turningAge}`}
                     </div>
                   </div>
                   <div className={`days-badge ${badge.class}`}>{badge.text}</div>
@@ -218,7 +194,6 @@ function BirthdayCalendar({ members }) {
         </div>
       )}
 
-      {/* Month Selector */}
       <div className="month-section">
         <h3>Browse All Months</h3>
         <div className="month-selector">
@@ -238,7 +213,6 @@ function BirthdayCalendar({ members }) {
         </div>
       </div>
 
-      {/* Month Detail View */}
       <div className="month-detail">
         <h3>{months[selectedMonth]} {new Date().getFullYear()}</h3>
         {monthBirthdays.length > 0 ? (
@@ -258,7 +232,7 @@ function BirthdayCalendar({ members }) {
                     <div className="birthday-name">{member.name}</div>
                     <div className="birthday-date">
                       {months[selectedMonth]} {member.day}
-                      {member.turningAge && ` • Turning ${member.turningAge}`}
+                      {member.turningAge && ` - Turning ${member.turningAge}`}
                     </div>
                   </div>
                   {member.daysUntil <= 30 && (
@@ -270,7 +244,7 @@ function BirthdayCalendar({ members }) {
           </div>
         ) : (
           <div className="empty-month">
-            <div className="empty-icon">🎈</div>
+            <div className="empty-icon">0</div>
             <p>No birthdays in {months[selectedMonth]}</p>
           </div>
         )}

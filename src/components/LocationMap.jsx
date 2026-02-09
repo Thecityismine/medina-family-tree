@@ -1,26 +1,57 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Tooltip, useMap } from 'react-leaflet';
+import L from 'leaflet';
 import './LocationMap.css';
+
+const getFlagCode = (location, country) => {
+  const value = `${location} ${country}`.toLowerCase();
+  if (value.includes('dominican')) return 'DR';
+  if (value.includes('mexico')) return 'MX';
+  if (
+    value.includes('usa') ||
+    value.includes('united states') ||
+    value.includes('california') ||
+    value.includes('new york') ||
+    value.includes('texas') ||
+    value.includes('florida')
+  ) {
+    return 'US';
+  }
+  return '??';
+};
 
 function LocationMap({ members }) {
   const [locationData, setLocationData] = useState([]);
   const [stats, setStats] = useState({ cities: 0, countries: 0, states: 0 });
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [mapPoints, setMapPoints] = useState([]);
+  const [isMapLoading, setIsMapLoading] = useState(false);
+  const [mapWarning, setMapWarning] = useState('');
 
   useEffect(() => {
     processLocations();
   }, [members]);
 
+  useEffect(() => {
+    if (locationData.length === 0) {
+      setMapPoints([]);
+      setMapWarning('');
+      return;
+    }
+
+    geocodeLocations(locationData);
+  }, [locationData]);
+
   const processLocations = () => {
-    // Group members by location
     const locationMap = {};
-    
-    members.forEach(member => {
+
+    members.forEach((member) => {
       if (!member.location) return;
-      
+
       const location = member.location.trim();
       if (!locationMap[location]) {
         locationMap[location] = {
-          location: location,
+          location,
           members: [],
           city: extractCity(location),
           state: extractState(location),
@@ -31,41 +62,33 @@ function LocationMap({ members }) {
     });
 
     const locations = Object.values(locationMap);
-    
-    // Calculate stats
-    const cities = new Set(locations.map(l => l.city).filter(Boolean)).size;
-    const states = new Set(locations.map(l => l.state).filter(Boolean)).size;
-    const countries = new Set(locations.map(l => l.country).filter(Boolean)).size;
+    const cities = new Set(locations.map((loc) => loc.city).filter(Boolean)).size;
+    const states = new Set(locations.map((loc) => loc.state).filter(Boolean)).size;
+    const countries = new Set(locations.map((loc) => loc.country).filter(Boolean)).size;
 
     setLocationData(locations);
     setStats({ cities, states, countries });
   };
 
   const extractCity = (location) => {
-    // Try to extract city from common formats
-    // "Los Angeles, California" -> "Los Angeles"
-    // "New York, NY, USA" -> "New York"
     const parts = location.split(',');
     return parts[0]?.trim() || location;
   };
 
   const extractState = (location) => {
-    // Try to extract state from common formats
     const parts = location.split(',');
-    if (parts.length >= 2) {
+    if (parts.length >= 3) {
       return parts[1].trim();
     }
     return null;
   };
 
   const extractCountry = (location) => {
-    // Try to extract country from common formats
     const parts = location.split(',');
     if (parts.length >= 3) {
       return parts[2].trim();
     }
-    // Common countries
-    if (location.toLowerCase().includes('usa') || 
+    if (location.toLowerCase().includes('usa') ||
         location.toLowerCase().includes('united states')) {
       return 'USA';
     }
@@ -75,33 +98,118 @@ function LocationMap({ members }) {
     return parts.length === 2 ? parts[1].trim() : null;
   };
 
-  const getFlag = (location) => {
-    const country = extractCountry(location)?.toLowerCase() || '';
-    
-    if (country.includes('usa') || country.includes('united states') || 
-        location.toLowerCase().includes('california') ||
-        location.toLowerCase().includes('new york') ||
-        location.toLowerCase().includes('texas') ||
-        location.toLowerCase().includes('florida')) {
-      return '🇺🇸';
-    }
-    if (country.includes('dominican') || country.includes('dr')) {
-      return '🇩🇴';
-    }
-    if (country.includes('mexico')) {
-      return '🇲🇽';
-    }
-    return '🌍';
+  const getGeocodeQuery = (location) => {
+    const parts = [location.city, location.state, location.country].filter(Boolean);
+    return parts.length ? parts.join(', ') : location.location;
   };
 
-  if (members.filter(m => m.location).length === 0) {
+  const getGeoCache = () => {
+    try {
+      const raw = localStorage.getItem('geoCache_v1');
+      return raw ? JSON.parse(raw) : {};
+    } catch (error) {
+      return {};
+    }
+  };
+
+  const setGeoCache = (cache) => {
+    try {
+      localStorage.setItem('geoCache_v1', JSON.stringify(cache));
+    } catch (error) {
+      // Ignore storage errors.
+    }
+  };
+
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const geocodeLocations = async (locations) => {
+    setIsMapLoading(true);
+    setMapWarning('');
+
+    const cache = getGeoCache();
+    const updatedCache = { ...cache };
+    const points = [];
+    let missingCount = 0;
+
+    for (let i = 0; i < locations.length; i += 1) {
+      const loc = locations[i];
+      const cacheEntry = updatedCache[loc.location];
+      if (cacheEntry && cacheEntry.lat && cacheEntry.lon) {
+        points.push({ ...loc, lat: cacheEntry.lat, lon: cacheEntry.lon });
+        continue;
+      }
+
+      const query = getGeocodeQuery(loc);
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`,
+          {
+            headers: {
+              'Accept-Language': 'en'
+            }
+          }
+        );
+        const data = await response.json();
+        if (Array.isArray(data) && data.length > 0) {
+          const result = data[0];
+          const lat = Number(result.lat);
+          const lon = Number(result.lon);
+          if (Number.isFinite(lat) && Number.isFinite(lon)) {
+            updatedCache[loc.location] = { lat, lon, updatedAt: Date.now() };
+            points.push({ ...loc, lat, lon });
+          } else {
+            missingCount += 1;
+          }
+        } else {
+          missingCount += 1;
+        }
+      } catch (error) {
+        missingCount += 1;
+      }
+
+      if (i < locations.length - 1) {
+        await sleep(1000);
+      }
+    }
+
+    setGeoCache(updatedCache);
+    setMapPoints(points);
+    setIsMapLoading(false);
+
+    if (missingCount > 0) {
+      setMapWarning(
+        'Some locations could not be mapped. Add city and country for better results.'
+      );
+    }
+  };
+
+  const createCountIcon = useMemo(() => {
+    return (count) => L.divIcon({
+      className: 'map-count-icon',
+      html: `<span>${count}</span>`,
+      iconSize: [30, 30],
+      iconAnchor: [15, 15]
+    });
+  }, []);
+
+  const FitBounds = ({ points }) => {
+    const map = useMap();
+    useEffect(() => {
+      if (!points.length) return;
+      const bounds = L.latLngBounds(points.map((point) => [point.lat, point.lon]));
+      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 6 });
+    }, [map, points]);
+    return null;
+  };
+
+  if (members.filter((member) => member.location).length === 0) {
     return (
       <div className="map-empty-state">
-        <div className="map-empty-icon">🗺️</div>
+        <div className="map-empty-icon">Map</div>
         <h3>No Locations Set</h3>
         <p>Add locations to family members to see them on the map</p>
         <div className="map-empty-hint">
-          <strong>Tip:</strong> Edit family members and add their location 
+          <strong>Tip:</strong> Edit family members and add their location
           (e.g., "Los Angeles, California, USA")
         </div>
       </div>
@@ -110,13 +218,11 @@ function LocationMap({ members }) {
 
   return (
     <div className="location-map-container">
-      {/* Header */}
       <div className="map-header">
-        <h2>🗺️ Family Locations</h2>
+        <h2>Family Locations</h2>
         <p className="map-subtitle">Where the Medina family calls home</p>
       </div>
 
-      {/* Stats */}
       <div className="map-stats">
         <div className="map-stat-card">
           <div className="map-stat-number">{stats.cities}</div>
@@ -136,56 +242,62 @@ function LocationMap({ members }) {
         </div>
       </div>
 
-      {/* Info Box */}
       <div className="map-info-box">
-        <div className="map-info-icon">📍</div>
+        <div className="map-info-icon">i</div>
         <div className="map-info-text">
-          <strong>Location Guide:</strong> Click on any location card to see who lives there. 
+          <strong>Location Guide:</strong> Click on any location card to see who lives there.
           Locations are grouped by city to show family clusters.
         </div>
       </div>
 
-      {/* Visual Map Representation */}
       <div className="map-visualization">
-        <div className="map-world">
+        <div className="map-world live-map">
           <h3>Family Distribution Map</h3>
-          <div className="map-pins-container">
-            {locationData.map((loc, index) => (
-              <div 
-                key={index} 
-                className="map-pin"
-                onClick={() => setSelectedLocation(loc)}
-                style={{
-                  left: `${(index * 25 + 15) % 85}%`,
-                  top: `${40 + (index % 3) * 15}%`
-                }}
-              >
-                <div className="pin-marker">
-                  <span className="pin-icon">📍</span>
-                  <span className="pin-count">{loc.members.length}</span>
-                </div>
-                <div className="pin-label">{loc.city}</div>
-              </div>
-            ))}
+          <div className="map-live">
+            {isMapLoading && (
+              <div className="map-loading">Loading map locations...</div>
+            )}
+            {!isMapLoading && (
+              <MapContainer center={[20, 0]} zoom={2} scrollWheelZoom={false}>
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution="&copy; OpenStreetMap contributors"
+                />
+                {mapPoints.map((point) => (
+                  <Marker
+                    key={point.location}
+                    position={[point.lat, point.lon]}
+                    icon={createCountIcon(point.members.length)}
+                    eventHandlers={{
+                      click: () => setSelectedLocation(point)
+                    }}
+                  >
+                    <Tooltip direction="top" offset={[0, -8]} opacity={1}>
+                      {point.city}
+                    </Tooltip>
+                  </Marker>
+                ))}
+                <FitBounds points={mapPoints} />
+              </MapContainer>
+            )}
           </div>
-          <div className="map-decoration">
-            <div className="map-grid"></div>
-          </div>
+          {mapWarning && <div className="map-warning">{mapWarning}</div>}
         </div>
       </div>
 
-      {/* Location Cards */}
       <div className="locations-section">
         <h3>All Locations ({locationData.length})</h3>
         <div className="location-cards-grid">
-          {locationData.map((loc, index) => (
-            <div 
-              key={index} 
+          {locationData.map((loc) => (
+            <div
+              key={loc.location}
               className="location-card"
               onClick={() => setSelectedLocation(loc)}
             >
               <div className="location-header">
-                <div className="location-flag">{getFlag(loc.location)}</div>
+                <div className="location-flag">
+                  {getFlagCode(loc.location, loc.country)}
+                </div>
                 <div className="location-name">
                   <div className="location-city">{loc.city}</div>
                   {loc.state && <div className="location-region">{loc.state}</div>}
@@ -195,9 +307,9 @@ function LocationMap({ members }) {
                   <span className="count-label">member{loc.members.length !== 1 ? 's' : ''}</span>
                 </div>
               </div>
-              
+
               <div className="location-members">
-                {loc.members.slice(0, 3).map(member => (
+                {loc.members.slice(0, 3).map((member) => (
                   <div key={member.id} className="location-member-chip">
                     <div className="member-chip-avatar">
                       {member.photoURL ? (
@@ -220,14 +332,15 @@ function LocationMap({ members }) {
         </div>
       </div>
 
-      {/* Location Detail Modal */}
       {selectedLocation && (
         <div className="location-modal-overlay" onClick={() => setSelectedLocation(null)}>
           <div className="location-modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="location-modal-close" onClick={() => setSelectedLocation(null)}>✕</button>
-            
+            <button className="location-modal-close" onClick={() => setSelectedLocation(null)}>X</button>
+
             <div className="location-modal-header">
-              <div className="location-modal-flag">{getFlag(selectedLocation.location)}</div>
+              <div className="location-modal-flag">
+                {getFlagCode(selectedLocation.location, selectedLocation.country)}
+              </div>
               <div className="location-modal-title">
                 <h3>{selectedLocation.city}</h3>
                 <p>{selectedLocation.location}</p>
@@ -237,14 +350,16 @@ function LocationMap({ members }) {
             <div className="location-modal-stats">
               <div className="modal-stat">
                 <span className="modal-stat-number">{selectedLocation.members.length}</span>
-                <span className="modal-stat-label">Family Member{selectedLocation.members.length !== 1 ? 's' : ''}</span>
+                <span className="modal-stat-label">
+                  Family Member{selectedLocation.members.length !== 1 ? 's' : ''}
+                </span>
               </div>
             </div>
 
             <div className="location-modal-body">
               <h4>Who Lives Here:</h4>
               <div className="location-modal-members">
-                {selectedLocation.members.map(member => (
+                {selectedLocation.members.map((member) => (
                   <div key={member.id} className="modal-member-card">
                     <div className="modal-member-avatar">
                       {member.photoURL ? (

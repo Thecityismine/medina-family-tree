@@ -4,7 +4,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'fire
 import { doc, setDoc } from 'firebase/firestore';
 import './Login.css';
 
-function Login({ onClose }) {
+function Login() {
   const [isSignup, setIsSignup] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,9 +34,6 @@ function Login({ onClose }) {
       } else {
         // Sign in
         await signInWithEmailAndPassword(auth, email, password);
-        if (onClose) {
-          onClose();
-        }
       }
     } catch (err) {
       setError(err.message);
@@ -46,18 +43,8 @@ function Login({ onClose }) {
   };
 
   return (
-    <div className={`login-container ${onClose ? 'is-overlay' : ''}`}>
+    <div className="login-container">
       <div className="login-box">
-        {onClose && (
-          <button
-            type="button"
-            className="login-close"
-            onClick={onClose}
-            aria-label="Close sign in"
-          >
-            X
-          </button>
-        )}
         <div className="login-header">
           <h1>The Medina Family</h1>
           <p>Est. 1947</p>
@@ -99,7 +86,7 @@ function Login({ onClose }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="••••••••"
+              placeholder="********"
               minLength="6"
             />
           </div>

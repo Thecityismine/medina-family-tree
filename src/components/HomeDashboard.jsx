@@ -1,7 +1,119 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { getNextBirthdayDate, parseBirthDate } from '../utils/birthdays';
 import './HomeDashboard.css';
 
-function HomeDashboard({ members, user }) {
+const FALLBACK_GENERATIONS = {
+  1: [
+    'Father',
+    'Mother',
+    'Grandfather',
+    'Grandmother',
+    'Great Grandfather',
+    'Great Grandmother',
+    "Anseli's Mother",
+    'Uncle',
+    'Aunt',
+    'Great Uncle',
+    'Great Aunt'
+  ],
+  2: [
+    'You (Admin)',
+    'You',
+    'Self',
+    'Spouse',
+    'Partner',
+    'Brother',
+    'Sister',
+    'Sibling',
+    'Cousin',
+    'First Cousin'
+  ],
+  3: ['Son', 'Daughter', 'Child', 'Nephew', 'Niece'],
+  4: ['Grandson', 'Granddaughter', 'Grandchild']
+};
+
+const getCreatedAtMs = (value) => {
+  if (!value) return 0;
+  if (typeof value.toDate === 'function') return value.toDate().getTime();
+  if (typeof value.seconds === 'number') return value.seconds * 1000;
+  if (typeof value._seconds === 'number') return value._seconds * 1000;
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === 'number') return value;
+  return 0;
+};
+
+const formatShortDate = (value) => {
+  const date = parseBirthDate(value);
+  if (!date) return '';
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
+const getGenerationCount = (members) => {
+  if (members.length === 0) return 0;
+
+  const memberMap = new Map(members.map((member) => [member.id, member]));
+  const generationById = new Map();
+  const visiting = new Set();
+
+  const getParentIds = (member) => {
+    if (!member || !Array.isArray(member.parentIds)) return [];
+    return member.parentIds.filter((id) => memberMap.has(id));
+  };
+
+  const getFallbackGeneration = (relationship) => {
+    if (!relationship) return null;
+    const entry = Object.entries(FALLBACK_GENERATIONS).find(([, list]) =>
+      list.includes(relationship)
+    );
+    return entry ? Number(entry[0]) : null;
+  };
+
+  const computeGeneration = (memberId) => {
+    if (generationById.has(memberId)) return generationById.get(memberId);
+    if (visiting.has(memberId)) return 1;
+
+    visiting.add(memberId);
+    const member = memberMap.get(memberId);
+    const parentIds = getParentIds(member);
+
+    let generation = 1;
+    if (parentIds.length > 0) {
+      const parentGenerations = parentIds
+        .map((id) => computeGeneration(id))
+        .filter((value) => Number.isFinite(value));
+      generation = parentGenerations.length > 0 ? Math.max(...parentGenerations) + 1 : 1;
+    }
+
+    generationById.set(memberId, generation);
+    visiting.delete(memberId);
+    return generation;
+  };
+
+  members.forEach((member) => {
+    computeGeneration(member.id);
+  });
+
+  members.forEach((member) => {
+    const parentIds = getParentIds(member);
+    if (parentIds.length > 0) return;
+
+    const fallbackGeneration = getFallbackGeneration(member.relationship);
+    if (fallbackGeneration) {
+      generationById.set(member.id, fallbackGeneration);
+    } else if (Array.isArray(member.spouseIds)) {
+      const spouseGeneration = member.spouseIds
+        .map((id) => generationById.get(id))
+        .find((value) => Number.isFinite(value));
+      if (spouseGeneration) {
+        generationById.set(member.id, spouseGeneration);
+      }
+    }
+  });
+
+  return new Set(generationById.values()).size;
+};
+
+function HomeDashboard({ members, user, onNavigate }) {
   const [stats, setStats] = useState({
     totalMembers: 0,
     upcomingBirthdays: 0,
@@ -18,38 +130,21 @@ function HomeDashboard({ members, user }) {
   }, [members]);
 
   const calculateStats = () => {
-    // Total members
     const totalMembers = members.length;
 
-    // Upcoming birthdays (next 30 days)
     const today = new Date();
     const next30Days = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
-    const upcoming = members.filter(m => {
-      if (!m.birthDate) return false;
-      const nextBday = getNextBirthday(new Date(m.birthDate));
-      return nextBday <= next30Days;
+    const upcoming = members.filter((member) => {
+      const nextBirthday = getNextBirthdayDate(member.birthDate, today);
+      return nextBirthday ? nextBirthday <= next30Days : false;
     }).length;
 
-    // Generations
-    const relationships = members.map(m => m.relationship);
-    const hasGeneration1 = relationships.some(r => 
-      ['Father', 'Mother', 'Grandfather', 'Grandmother', "Anseli's Mother"].includes(r)
-    );
-    const hasGeneration2 = relationships.some(r => 
-      ['You (Admin)', 'Spouse', 'Partner', 'Brother', 'Sister'].includes(r)
-    );
-    const hasGeneration3 = relationships.some(r => 
-      ['Son', 'Daughter', 'Child'].includes(r)
-    );
-    const hasGeneration4 = relationships.some(r => 
-      ['Grandson', 'Granddaughter', 'Grandchild'].includes(r)
-    );
-    const generations = [hasGeneration1, hasGeneration2, hasGeneration3, hasGeneration4]
-      .filter(Boolean).length;
+    const generations = getGenerationCount(members);
 
-    // Locations
     const uniqueLocations = new Set(
-      members.filter(m => m.location).map(m => m.location)
+      members
+        .map((member) => (member.location || '').trim())
+        .filter(Boolean)
     ).size;
 
     setStats({
@@ -60,56 +155,30 @@ function HomeDashboard({ members, user }) {
     });
   };
 
-  const getNextBirthday = (birthDate) => {
-    const today = new Date();
-    const thisYear = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
-    
-    if (thisYear < today) {
-      return new Date(today.getFullYear() + 1, birthDate.getMonth(), birthDate.getDate());
-    }
-    return thisYear;
-  };
-
   const getRecentlyAdded = () => {
     const sorted = [...members]
-      .filter(m => m.createdAt)
-      .sort((a, b) => {
-        const aTime = a.createdAt.seconds || 0;
-        const bTime = b.createdAt.seconds || 0;
-        return bTime - aTime;
-      })
+      .filter((member) => member.createdAt)
+      .sort((a, b) => getCreatedAtMs(b.createdAt) - getCreatedAtMs(a.createdAt))
       .slice(0, 3);
-    
+
     setRecentlyAdded(sorted);
   };
 
   const getUpcomingBirthdays = () => {
     const today = new Date();
-    
+
     const upcoming = members
-      .filter(m => m.birthDate)
-      .map(member => {
-        const birthDate = new Date(member.birthDate);
-        const nextBirthday = getNextBirthday(birthDate);
+      .map((member) => {
+        const nextBirthday = getNextBirthdayDate(member.birthDate, today);
+        if (!nextBirthday) return null;
         const daysUntil = Math.ceil((nextBirthday - today) / (1000 * 60 * 60 * 24));
-        
-        return {
-          ...member,
-          daysUntil,
-          nextBirthday
-        };
+        return { ...member, daysUntil, nextBirthday };
       })
-      .filter(m => m.daysUntil <= 30)
+      .filter((member) => member && member.daysUntil <= 30)
       .sort((a, b) => a.daysUntil - b.daysUntil)
       .slice(0, 3);
 
     setUpcomingBirthdays(upcoming);
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   const getTimeOfDay = () => {
@@ -119,18 +188,22 @@ function HomeDashboard({ members, user }) {
     return 'Good evening';
   };
 
+  const handleNavigate = (view) => {
+    if (onNavigate) {
+      onNavigate(view);
+    }
+  };
+
   return (
     <div className="home-dashboard">
-      {/* Welcome Header */}
       <div className="welcome-header">
-        <h1>{getTimeOfDay()}! 👋</h1>
+        <h1>{getTimeOfDay()}!</h1>
         <p className="welcome-subtitle">Welcome to The Medina Family Tree</p>
       </div>
 
-      {/* Quick Stats */}
       <div className="dashboard-stats">
         <div className="dash-stat-card">
-          <div className="dash-stat-icon">👥</div>
+          <div className="dash-stat-icon">Members</div>
           <div className="dash-stat-content">
             <div className="dash-stat-number">{stats.totalMembers}</div>
             <div className="dash-stat-label">Family Members</div>
@@ -138,7 +211,7 @@ function HomeDashboard({ members, user }) {
         </div>
 
         <div className="dash-stat-card">
-          <div className="dash-stat-icon">🎂</div>
+          <div className="dash-stat-icon">Birthdays</div>
           <div className="dash-stat-content">
             <div className="dash-stat-number">{stats.upcomingBirthdays}</div>
             <div className="dash-stat-label">Upcoming Birthdays</div>
@@ -146,7 +219,7 @@ function HomeDashboard({ members, user }) {
         </div>
 
         <div className="dash-stat-card">
-          <div className="dash-stat-icon">🌳</div>
+          <div className="dash-stat-icon">Tree</div>
           <div className="dash-stat-content">
             <div className="dash-stat-number">{stats.generations}</div>
             <div className="dash-stat-label">Generations</div>
@@ -154,7 +227,7 @@ function HomeDashboard({ members, user }) {
         </div>
 
         <div className="dash-stat-card">
-          <div className="dash-stat-icon">🗺️</div>
+          <div className="dash-stat-icon">Locations</div>
           <div className="dash-stat-content">
             <div className="dash-stat-number">{stats.locations}</div>
             <div className="dash-stat-label">Locations</div>
@@ -162,17 +235,15 @@ function HomeDashboard({ members, user }) {
         </div>
       </div>
 
-      {/* Main Content Grid */}
       <div className="dashboard-grid">
-        {/* Upcoming Birthdays Widget */}
         {upcomingBirthdays.length > 0 && (
           <div className="dashboard-widget">
             <div className="widget-header">
-              <h3>🎉 Upcoming Birthdays</h3>
+              <h3>Upcoming Birthdays</h3>
               <span className="widget-count">{upcomingBirthdays.length}</span>
             </div>
             <div className="widget-content">
-              {upcomingBirthdays.map(member => (
+              {upcomingBirthdays.map((member) => (
                 <div key={member.id} className="widget-item">
                   <div className="widget-item-avatar">
                     {member.photoURL ? (
@@ -184,13 +255,13 @@ function HomeDashboard({ members, user }) {
                   <div className="widget-item-info">
                     <div className="widget-item-name">{member.name}</div>
                     <div className="widget-item-detail">
-                      {formatDate(member.birthDate)}
+                      {formatShortDate(member.birthDate)}
                     </div>
                   </div>
                   <div className={`widget-item-badge ${member.daysUntil === 0 ? 'today' : ''}`}>
-                    {member.daysUntil === 0 ? 'Today!' : 
-                     member.daysUntil === 1 ? 'Tomorrow' : 
-                     `${member.daysUntil} days`}
+                    {member.daysUntil === 0 ? 'Today' :
+                      member.daysUntil === 1 ? 'Tomorrow' :
+                        `${member.daysUntil} days`}
                   </div>
                 </div>
               ))}
@@ -198,15 +269,14 @@ function HomeDashboard({ members, user }) {
           </div>
         )}
 
-        {/* Recently Added Widget */}
         {recentlyAdded.length > 0 && (
           <div className="dashboard-widget">
             <div className="widget-header">
-              <h3>✨ Recently Added</h3>
+              <h3>Recently Added</h3>
               <span className="widget-count">{recentlyAdded.length}</span>
             </div>
             <div className="widget-content">
-              {recentlyAdded.map(member => (
+              {recentlyAdded.map((member) => (
                 <div key={member.id} className="widget-item">
                   <div className="widget-item-avatar">
                     {member.photoURL ? (
@@ -226,37 +296,35 @@ function HomeDashboard({ members, user }) {
           </div>
         )}
 
-        {/* Quick Actions Widget */}
         <div className="dashboard-widget quick-actions">
           <div className="widget-header">
-            <h3>⚡ Quick Actions</h3>
+            <h3>Quick Actions</h3>
           </div>
           <div className="widget-content">
             <div className="action-grid">
-              <button className="action-button" onClick={() => window.location.hash = '#tree'}>
-                <span className="action-icon">🌳</span>
+              <button className="action-button" onClick={() => handleNavigate('tree')}>
+                <span className="action-icon">Tree</span>
                 <span className="action-label">View Tree</span>
               </button>
-              <button className="action-button" onClick={() => window.location.hash = '#birthdays'}>
-                <span className="action-icon">🎂</span>
+              <button className="action-button" onClick={() => handleNavigate('birthdays')}>
+                <span className="action-icon">Birthdays</span>
                 <span className="action-label">Birthdays</span>
               </button>
-              <button className="action-button" onClick={() => window.location.hash = '#map'}>
-                <span className="action-icon">🗺️</span>
-                <span className="action-label">Map</span>
+              <button className="action-button" onClick={() => handleNavigate('locations')}>
+                <span className="action-icon">Map</span>
+                <span className="action-label">Locations</span>
               </button>
-              <button className="action-button" onClick={() => window.location.hash = '#members'}>
-                <span className="action-icon">👥</span>
+              <button className="action-button" onClick={() => handleNavigate('list')}>
+                <span className="action-icon">Members</span>
                 <span className="action-label">Members</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Family Highlights Widget */}
         <div className="dashboard-widget highlights">
           <div className="widget-header">
-            <h3>📊 Family Highlights</h3>
+            <h3>Family Highlights</h3>
           </div>
           <div className="widget-content">
             <div className="highlight-item">

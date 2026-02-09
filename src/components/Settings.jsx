@@ -1,63 +1,29 @@
 import React, { useState } from 'react';
 import { auth, db } from '../firebase';
 import { updatePassword } from 'firebase/auth';
-import { collection, doc, updateDoc, writeBatch } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
+import { parseBirthDate } from '../utils/birthdays';
 import './Settings.css';
 
-const parseDateValue = (value) => {
-  if (!value) return null;
-  if (value instanceof Date) return value;
-  if (typeof value.toDate === 'function') return value.toDate();
-  if (typeof value.seconds === 'number') return new Date(value.seconds * 1000);
-  if (typeof value._seconds === 'number') return new Date(value._seconds * 1000);
-  if (typeof value === 'number') return new Date(value);
-  if (typeof value === 'string') {
-    const parsed = new Date(value);
-    return Number.isNaN(parsed.getTime()) ? null : parsed;
-  }
-  return null;
-};
-
-const toDateOnly = (value) => {
-  const date = parseDateValue(value);
+const formatBirthDateValue = (value) => {
+  const date = parseBirthDate(value);
   return date ? date.toISOString().split('T')[0] : '';
 };
 
-const toCreatedAtIso = (value) => {
-  const date = parseDateValue(value);
-  return date ? date.toISOString() : '';
-};
-
-const normalizeArray = (value) => {
-  if (!Array.isArray(value)) return [];
-  return value
-    .map((item) => (typeof item === 'string' ? item.trim() : ''))
-    .filter(Boolean);
-};
-
-const normalizeImportedMember = (member) => {
-  return {
-    name: (member.name || '').trim(),
-    relationship: member.relationship || '',
-    birthDate: toDateOnly(member.birthDate),
-    passedAwayDate: toDateOnly(member.passedAwayDate),
-    location: member.location || '',
-    notes: member.notes || '',
-    parentIds: normalizeArray(member.parentIds),
-    spouseIds: normalizeArray(member.spouseIds),
-    gender: member.gender || '',
-    photoURL: member.photoURL || null,
-    createdAt: parseDateValue(member.createdAt) || new Date(),
-    updatedAt: new Date()
-  };
+const formatCreatedAt = (value) => {
+  if (!value) return '';
+  if (typeof value.toDate === 'function') return value.toDate().toISOString();
+  if (typeof value.seconds === 'number') return new Date(value.seconds * 1000).toISOString();
+  if (typeof value._seconds === 'number') return new Date(value._seconds * 1000).toISOString();
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'number') return new Date(value).toISOString();
+  return '';
 };
 
 function Settings({ user, userRole, members }) {
   const [activeTab, setActiveTab] = useState('profile');
   const [theme, setTheme] = useState('dark');
   const [loading, setLoading] = useState(false);
-  const [importLoading, setImportLoading] = useState(false);
-  const [importFile, setImportFile] = useState(null);
   const [message, setMessage] = useState({ type: '', text: '' });
 
   const [profileData, setProfileData] = useState({
@@ -69,8 +35,6 @@ function Settings({ user, userRole, members }) {
     newPassword: '',
     confirmPassword: ''
   });
-
-  const isAdmin = userRole === 'admin';
 
   const showMessage = (type, text) => {
     setMessage({ type, text });
@@ -131,154 +95,69 @@ function Settings({ user, userRole, members }) {
         family: 'The Medina Family',
         established: 1947,
         members: members.map((member) => ({
-          id: member.id || '',
           name: member.name || '',
           relationship: member.relationship || '',
-          birthDate: toDateOnly(member.birthDate),
-          passedAwayDate: toDateOnly(member.passedAwayDate),
+          birthDate: formatBirthDateValue(member.birthDate),
+          passedAwayDate: formatBirthDateValue(member.passedAwayDate),
           location: member.location || '',
           notes: member.notes || '',
-          parentIds: normalizeArray(member.parentIds),
-          spouseIds: normalizeArray(member.spouseIds),
+          parentIds: Array.isArray(member.parentIds) ? member.parentIds : [],
+          spouseIds: Array.isArray(member.spouseIds) ? member.spouseIds : [],
           gender: member.gender || '',
           photoURL: member.photoURL || '',
-          createdAt: toCreatedAtIso(member.createdAt)
+          createdAt: formatCreatedAt(member.createdAt)
         }))
       };
 
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `medina-family-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `medina-family-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
       showMessage('success', 'Data exported as JSON.');
-      return;
-    }
-
-    if (format === 'csv') {
+    } else if (format === 'csv') {
       const headers = [
-        'ID',
         'Name',
         'Relationship',
         'Birthday',
         'Passed Away',
         'Location',
         'Notes',
-        'Parent IDs',
-        'Spouse IDs',
-        'Gender',
-        'Photo URL',
-        'Created At'
+        'Parents',
+        'Spouses'
       ];
-
-      const escapeCsv = (value) => `"${String(value || '').replace(/"/g, '""')}"`;
       const rows = members.map((member) => [
-        member.id || '',
         member.name || '',
         member.relationship || '',
-        toDateOnly(member.birthDate),
-        toDateOnly(member.passedAwayDate),
+        formatBirthDateValue(member.birthDate),
+        formatBirthDateValue(member.passedAwayDate),
         member.location || '',
         member.notes || '',
-        normalizeArray(member.parentIds).join('|'),
-        normalizeArray(member.spouseIds).join('|'),
-        member.gender || '',
-        member.photoURL || '',
-        toCreatedAtIso(member.createdAt)
+        Array.isArray(member.parentIds) ? member.parentIds.join('|') : '',
+        Array.isArray(member.spouseIds) ? member.spouseIds.join('|') : ''
       ]);
 
-      const csv = [headers.map(escapeCsv).join(','), ...rows.map((row) => row.map(escapeCsv).join(','))].join('\n');
+      const csv = [
+        headers.join(','),
+        ...rows.map((row) => row.map((cell) => `"${cell}"`).join(','))
+      ].join('\n');
+
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `medina-family-${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `medina-family-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
       showMessage('success', 'Data exported as CSV.');
-    }
-  };
-
-  const handleImportBackup = async () => {
-    if (!isAdmin) {
-      showMessage('error', 'Only admins can import backups.');
-      return;
-    }
-
-    if (!importFile) {
-      showMessage('error', 'Select a backup JSON file first.');
-      return;
-    }
-
-    setImportLoading(true);
-
-    try {
-      const text = await importFile.text();
-      const parsed = JSON.parse(text);
-
-      if (!parsed || !Array.isArray(parsed.members)) {
-        throw new Error('Invalid backup format. Expected a members array.');
-      }
-
-      const importEntries = parsed.members
-        .filter((member) => member && typeof member === 'object')
-        .map((member) => ({
-          source: member,
-          data: normalizeImportedMember(member)
-        }))
-        .filter((entry) => entry.data.name);
-
-      if (importEntries.length === 0) {
-        throw new Error('No valid members found in this backup file.');
-      }
-
-      const confirmed = window.confirm(
-        `Import ${importEntries.length} members from backup? This adds or updates members in the current tree.`
-      );
-
-      if (!confirmed) {
-        setImportLoading(false);
-        return;
-      }
-
-      const chunkSize = 400;
-
-      for (let i = 0; i < importEntries.length; i += chunkSize) {
-        const batch = writeBatch(db);
-        const chunk = importEntries.slice(i, i + chunkSize);
-
-        chunk.forEach((entry) => {
-          const source = entry.source || {};
-          const memberData = entry.data;
-          const importedId = typeof source.id === 'string' ? source.id.trim() : '';
-          const targetRef = importedId
-            ? doc(db, 'members', importedId)
-            : doc(collection(db, 'members'));
-
-          batch.set(targetRef, memberData, { merge: true });
-        });
-
-        await batch.commit();
-      }
-
-      setImportFile(null);
-      showMessage(
-        'success',
-        `Imported ${importEntries.length} members successfully. Reload the page to refresh live order if needed.`
-      );
-    } catch (error) {
-      console.error('Import error:', error);
-      showMessage('error', error.message || 'Failed to import backup.');
-    } finally {
-      setImportLoading(false);
     }
   };
 
@@ -342,13 +221,23 @@ function Settings({ user, userRole, members }) {
 
               <div className="form-group">
                 <label>Email</label>
-                <input type="email" value={profileData.email} disabled className="disabled-input" />
+                <input
+                  type="email"
+                  value={profileData.email}
+                  disabled
+                  className="disabled-input"
+                />
                 <small>Email cannot be changed</small>
               </div>
 
               <div className="form-group">
                 <label>Role</label>
-                <input type="text" value={userRole || 'viewer'} disabled className="disabled-input" />
+                <input
+                  type="text"
+                  value={userRole || 'viewer'}
+                  disabled
+                  className="disabled-input"
+                />
                 <small>Role is managed by administrators</small>
               </div>
 
@@ -409,10 +298,39 @@ function Settings({ user, userRole, members }) {
                 <div className="preference-control">
                   <select value={theme} onChange={(e) => setTheme(e.target.value)} className="theme-select">
                     <option value="dark">Dark Mode</option>
-                    <option value="light" disabled>
-                      Light Mode (Coming Soon)
-                    </option>
+                    <option value="light" disabled>Light Mode (Coming Soon)</option>
                   </select>
+                </div>
+              </div>
+            </div>
+
+            <h3 style={{ marginTop: '40px' }}>Notifications</h3>
+            <p className="section-description">Manage your notification preferences</p>
+
+            <div className="preference-group">
+              <div className="preference-item">
+                <div className="preference-info">
+                  <div className="preference-label">Birthday Reminders</div>
+                  <div className="preference-description">Get notified about upcoming birthdays</div>
+                </div>
+                <div className="preference-control">
+                  <label className="toggle-switch">
+                    <input type="checkbox" defaultChecked />
+                    <span className="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="preference-item">
+                <div className="preference-info">
+                  <div className="preference-label">New Member Alerts</div>
+                  <div className="preference-description">Get notified when new members are added</div>
+                </div>
+                <div className="preference-control">
+                  <label className="toggle-switch">
+                    <input type="checkbox" defaultChecked />
+                    <span className="toggle-slider"></span>
+                  </label>
                 </div>
               </div>
             </div>
@@ -430,7 +348,7 @@ function Settings({ user, userRole, members }) {
                 <div className="export-info">
                   <div className="export-title">Export as JSON</div>
                   <div className="export-description">
-                    Full backup including IDs, relationships, and metadata.
+                    Complete data backup with all information
                   </div>
                 </div>
                 <button className="export-button">Download</button>
@@ -441,45 +359,11 @@ function Settings({ user, userRole, members }) {
                 <div className="export-info">
                   <div className="export-title">Export as CSV</div>
                   <div className="export-description">
-                    Spreadsheet format for Excel or Google Sheets.
+                    Spreadsheet format for Excel or Google Sheets
                   </div>
                 </div>
                 <button className="export-button">Download</button>
               </div>
-            </div>
-
-            <div className="import-section">
-              <h3>Import Backup</h3>
-              <p className="section-description">
-                Restore members from a JSON backup file. For best hierarchy restore, use exports that include member
-                IDs.
-              </p>
-
-              {isAdmin ? (
-                <div className="import-card">
-                  <input
-                    type="file"
-                    accept=".json,application/json"
-                    onChange={(e) => setImportFile(e.target.files?.[0] || null)}
-                    className="import-input"
-                  />
-                  <button
-                    type="button"
-                    className="import-button"
-                    onClick={handleImportBackup}
-                    disabled={importLoading}
-                  >
-                    {importLoading ? 'Importing...' : 'Import Backup JSON'}
-                  </button>
-                  <small className="import-note">
-                    Selected file: {importFile ? importFile.name : 'None'}
-                  </small>
-                </div>
-              ) : (
-                <div className="import-readonly">
-                  Only admins can import backup files.
-                </div>
-              )}
             </div>
 
             <div className="data-stats">
@@ -491,15 +375,21 @@ function Settings({ user, userRole, members }) {
                 </div>
                 <div className="data-stat-item">
                   <span className="data-stat-label">With Photos:</span>
-                  <span className="data-stat-value">{members.filter((member) => member.photoURL).length}</span>
+                  <span className="data-stat-value">
+                    {members.filter((member) => member.photoURL).length}
+                  </span>
                 </div>
                 <div className="data-stat-item">
                   <span className="data-stat-label">With Birthdays:</span>
-                  <span className="data-stat-value">{members.filter((member) => member.birthDate).length}</span>
+                  <span className="data-stat-value">
+                    {members.filter((member) => member.birthDate).length}
+                  </span>
                 </div>
                 <div className="data-stat-item">
                   <span className="data-stat-label">With Locations:</span>
-                  <span className="data-stat-value">{members.filter((member) => member.location).length}</span>
+                  <span className="data-stat-value">
+                    {members.filter((member) => member.location).length}
+                  </span>
                 </div>
               </div>
             </div>

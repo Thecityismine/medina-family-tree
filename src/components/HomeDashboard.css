@@ -32,12 +32,16 @@
 .dash-stat-card {
   display: flex;
   align-items: center;
-  gap: 20px;
   background: #000000;
   border: 1px solid #2C2C2E;
   border-radius: 16px;
   padding: 24px;
   transition: all 0.3s;
+  flex-direction: column;
+  text-align: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 120px;
 }
 
 .dash-stat-card:hover {
@@ -47,12 +51,20 @@
 }
 
 .dash-stat-icon {
-  font-size: 40px;
+  font-size: 13px;
   flex-shrink: 0;
+  color: #8E8E93;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
 }
 
 .dash-stat-content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
 .dash-stat-number {
@@ -61,7 +73,7 @@
   color: #B8956A;
   font-weight: 600;
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 0;
 }
 
 .dash-stat-label {
@@ -69,6 +81,7 @@
   color: #8E8E93;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  line-height: 1.2;
 }
 
 /* Dashboard Grid */
@@ -238,7 +251,10 @@
 }
 
 .action-icon {
-  font-size: 32px;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #8E8E93;
 }
 
 .action-label {
@@ -296,11 +312,11 @@
   .dash-stat-card {
     flex-direction: column;
     text-align: center;
-    gap: 12px;
+    gap: 10px;
   }
 
-  .dash-stat-icon {
-    font-size: 36px;
+  .dash-stat-content {
+    gap: 10px;
   }
 
   .dash-stat-number {

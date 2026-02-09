@@ -1,20 +1,26 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    function isAdmin() {
-      return request.auth != null &&
-        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    
+    // Profile photos
+    match /photos/{userId}/{fileName} {
+      // Anyone authenticated can read photos
+      allow read: if request.auth != null;
+      
+      // Users can upload their own photos, admins can upload any
+      allow write: if request.auth != null && 
+                     (request.auth.uid == userId || 
+                      isAdmin());
+      
+      // File validation: max 5MB, images only
+      allow write: if request.resource.size < 5 * 1024 * 1024 &&
+                     request.resource.contentType.matches('image/.*');
     }
-
-    match /photos/{memberId}/{fileName} {
-      // Public read access for profile images.
-      allow read: if true;
-
-      // Only admins can upload/update/delete photos, with image constraints.
-      allow write: if isAdmin() &&
-        request.resource != null &&
-        request.resource.size < 5 * 1024 * 1024 &&
-        request.resource.contentType.matches('image/.*');
+    
+    // Helper function to check admin
+    function isAdmin() {
+      return request.auth != null && 
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
   }
 }

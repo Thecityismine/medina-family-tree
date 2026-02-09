@@ -124,7 +124,7 @@
 
 .map-world {
   position: relative;
-  background: #000000;
+  background: linear-gradient(180deg, #070707 0%, #000000 100%);
   border: 1px solid #2C2C2E;
   border-radius: 16px;
   padding: 40px;
@@ -132,7 +132,44 @@
   overflow: hidden;
 }
 
+.map-world.live-map {
+  padding: 24px;
+  background: #0B0B0B;
+}
+
+.map-world.live-map::before,
+.map-world.live-map::after {
+  display: none;
+}
+
+.map-world::before,
+.map-world::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.map-world::before {
+  background:
+    radial-gradient(220px 140px at 18% 35%, rgba(184, 149, 106, 0.18) 0%, rgba(184, 149, 106, 0.05) 65%, transparent 70%),
+    radial-gradient(260px 160px at 48% 28%, rgba(184, 149, 106, 0.16) 0%, rgba(184, 149, 106, 0.05) 60%, transparent 66%),
+    radial-gradient(240px 140px at 72% 60%, rgba(184, 149, 106, 0.14) 0%, rgba(184, 149, 106, 0.05) 62%, transparent 68%),
+    radial-gradient(200px 120px at 32% 70%, rgba(184, 149, 106, 0.16) 0%, rgba(184, 149, 106, 0.05) 60%, transparent 66%);
+  opacity: 0.7;
+}
+
+.map-world::after {
+  background:
+    radial-gradient(600px 220px at 50% 0%, rgba(255, 255, 255, 0.04) 0%, transparent 60%),
+    radial-gradient(500px 260px at 50% 100%, rgba(184, 149, 106, 0.05) 0%, transparent 60%);
+  opacity: 0.6;
+}
+
 .map-world h3 {
+  position: relative;
+  z-index: 2;
   font-family: 'Playfair Display', serif;
   font-size: 24px;
   color: #F5F5F7;
@@ -140,9 +177,81 @@
   text-align: center;
 }
 
+.map-live {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #2C2C2E;
+  background: #0B0B0B;
+}
+
+.map-live .leaflet-container {
+  width: 100%;
+  height: 360px;
+  background: #0B0B0B;
+  font-family: inherit;
+}
+
+.map-live .leaflet-tile {
+  filter: grayscale(0.7) brightness(0.85) contrast(1.1);
+}
+
+.map-live .leaflet-control-attribution {
+  background: rgba(0, 0, 0, 0.6);
+  color: #8E8E93;
+}
+
+.map-live .leaflet-control-attribution a {
+  color: #B8956A;
+}
+
+.map-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8E8E93;
+  font-size: 14px;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 2;
+}
+
+.map-warning {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #8E8E93;
+  text-align: center;
+}
+
+.map-count-icon {
+  width: 30px;
+  height: 30px;
+  background: #B8956A;
+  border-radius: 50%;
+  border: 2px solid #0B0B0B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+}
+
+.map-count-icon span {
+  line-height: 1;
+}
+
+.map-count-icon.leaflet-div-icon {
+  background: #B8956A;
+  border: 2px solid #0B0B0B;
+}
+
 .map-pins-container {
   position: relative;
   height: 300px;
+  z-index: 2;
 }
 
 .map-pin {
@@ -165,9 +274,27 @@
 }
 
 .pin-icon {
-  font-size: 32px;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6));
+  width: 22px;
+  height: 22px;
+  background: #B8956A;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: block;
+  position: relative;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.6);
   animation: bounce 2s infinite;
+}
+
+.pin-icon::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: #1C1C1E;
+  border-radius: 50%;
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  transform: rotate(45deg);
 }
 
 @keyframes bounce {
@@ -177,7 +304,7 @@
 
 .pin-count {
   position: absolute;
-  top: 2px;
+  top: -6px;
   left: 50%;
   transform: translateX(-50%);
   background: #B8956A;
@@ -211,13 +338,14 @@
   right: 0;
   bottom: 0;
   pointer-events: none;
-  opacity: 0.1;
+  opacity: 0.12;
+  z-index: 1;
 }
 
 .map-grid {
   width: 100%;
   height: 100%;
-  background-image: 
+  background-image:
     linear-gradient(#2C2C2E 1px, transparent 1px),
     linear-gradient(90deg, #2C2C2E 1px, transparent 1px);
   background-size: 50px 50px;
@@ -267,8 +395,10 @@
 }
 
 .location-flag {
-  font-size: 32px;
+  font-size: 20px;
   flex-shrink: 0;
+  color: #B8956A;
+  font-weight: 600;
 }
 
 .location-name {
@@ -419,8 +549,10 @@
 }
 
 .location-modal-flag {
-  font-size: 48px;
+  font-size: 32px;
   flex-shrink: 0;
+  color: #B8956A;
+  font-weight: 600;
 }
 
 .location-modal-title h3 {
@@ -550,8 +682,16 @@
     min-height: 300px;
   }
 
+  .map-world.live-map {
+    padding: 20px;
+  }
+
   .map-pins-container {
     height: 250px;
+  }
+
+  .map-live .leaflet-container {
+    height: 260px;
   }
 
   .location-cards-grid {
