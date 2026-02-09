@@ -1,32 +1,13 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { db, storage } from '../firebase';
 import { doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import EditMemberModal from './EditMemberModal';
 import './MemberList.css';
 
-const GENDER_LABELS = {
-  female: 'Female',
-  male: 'Male',
-  'non-binary': 'Non-binary',
-  unspecified: 'Prefer not to say'
-};
-
 function MemberList({ members, isAdmin }) {
   const [editingMember, setEditingMember] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(null);
-
-  const memberNameMap = useMemo(() => {
-    return members.reduce((acc, member) => {
-      acc[member.id] = member.name || 'Unnamed member';
-      return acc;
-    }, {});
-  }, [members]);
-
-  const resolveNames = (ids) => {
-    if (!Array.isArray(ids)) return [];
-    return ids.map((id) => memberNameMap[id]).filter(Boolean);
-  };
 
   const handleDelete = async (memberId, memberName) => {
     if (!window.confirm(`Are you sure you want to delete ${memberName}?`)) {
@@ -78,10 +59,10 @@ function MemberList({ members, isAdmin }) {
   const formatDate = (dateString) => {
     if (!dateString) return 'Not set';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric'
+    return date.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric' 
     });
   };
 
@@ -100,7 +81,7 @@ function MemberList({ members, isAdmin }) {
   if (members.length === 0) {
     return (
       <div className="empty-state">
-        <div className="empty-icon">dY`</div>
+        <div className="empty-icon">👥</div>
         <h3>No Family Members Yet</h3>
         <p>Start by adding your first family member!</p>
       </div>
@@ -112,17 +93,14 @@ function MemberList({ members, isAdmin }) {
       <div className="member-grid">
         {members.map((member) => {
           const age = calculateAge(member.birthDate);
-          const parentNames = resolveNames(member.parentIds);
-          const spouseNames = resolveNames(member.spouseIds);
-          const genderLabel = GENDER_LABELS[member.gender];
-
+          
           return (
             <div key={member.id} className="member-card">
               <div className="member-photo-section">
                 {member.photoURL ? (
-                  <img
-                    src={member.photoURL}
-                    alt={member.name}
+                  <img 
+                    src={member.photoURL} 
+                    alt={member.name} 
                     className="member-photo"
                   />
                 ) : (
@@ -130,14 +108,14 @@ function MemberList({ members, isAdmin }) {
                     {member.name?.charAt(0).toUpperCase()}
                   </div>
                 )}
-
+                
                 {isAdmin && (
                   <label className="photo-upload-btn">
                     {uploadingPhoto === member.id ? (
                       <span>Uploading...</span>
                     ) : (
                       <>
-                        dY"ú {member.photoURL ? 'Change' : 'Add'} Photo
+                        📷 {member.photoURL ? 'Change' : 'Add'} Photo
                         <input
                           type="file"
                           accept="image/*"
@@ -169,39 +147,21 @@ function MemberList({ members, isAdmin }) {
                     <span className="detail-value">{member.location}</span>
                   </div>
                 )}
-                {genderLabel && (
-                  <div className="member-detail">
-                    <span className="detail-label">Gender:</span>
-                    <span className="detail-value">{genderLabel}</span>
-                  </div>
-                )}
-                {parentNames.length > 0 && (
-                  <div className="member-detail">
-                    <span className="detail-label">Parents:</span>
-                    <span className="detail-value">{parentNames.join(', ')}</span>
-                  </div>
-                )}
-                {spouseNames.length > 0 && (
-                  <div className="member-detail">
-                    <span className="detail-label">Spouse:</span>
-                    <span className="detail-value">{spouseNames.join(', ')}</span>
-                  </div>
-                )}
               </div>
 
               {isAdmin && (
                 <div className="member-actions">
-                  <button
+                  <button 
                     className="btn-edit"
                     onClick={() => setEditingMember(member)}
                   >
-                    ƒo?‹,? Edit
+                    ✏️ Edit
                   </button>
-                  <button
+                  <button 
                     className="btn-delete"
                     onClick={() => handleDelete(member.id, member.name)}
                   >
-                    dY-`‹,? Delete
+                    🗑️ Delete
                   </button>
                 </div>
               )}
@@ -213,7 +173,6 @@ function MemberList({ members, isAdmin }) {
       {editingMember && (
         <EditMemberModal
           member={editingMember}
-          members={members}
           onClose={() => setEditingMember(null)}
         />
       )}

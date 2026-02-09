@@ -4,7 +4,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'fire
 import { doc, setDoc } from 'firebase/firestore';
 import './Login.css';
 
-function Login() {
+function Login({ onClose }) {
   const [isSignup, setIsSignup] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,6 +34,9 @@ function Login() {
       } else {
         // Sign in
         await signInWithEmailAndPassword(auth, email, password);
+        if (onClose) {
+          onClose();
+        }
       }
     } catch (err) {
       setError(err.message);
@@ -43,8 +46,18 @@ function Login() {
   };
 
   return (
-    <div className="login-container">
+    <div className={`login-container ${onClose ? 'is-overlay' : ''}`}>
       <div className="login-box">
+        {onClose && (
+          <button
+            type="button"
+            className="login-close"
+            onClick={onClose}
+            aria-label="Close sign in"
+          >
+            X
+          </button>
+        )}
         <div className="login-header">
           <h1>The Medina Family</h1>
           <p>Est. 1947</p>

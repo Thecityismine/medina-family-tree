@@ -1,21 +1,21 @@
-# dYs? MEDINA FAMILY TREE - SIMPLE ADMIN PANEL
+# 🚀 MEDINA FAMILY TREE - SIMPLE ADMIN PANEL
 
-## ƒo. WHAT'S COMPLETE:
+## ✅ WHAT'S COMPLETE:
 
 Your **working admin panel** is ready! Here's what you can do:
 
-ƒo. **Login/Signup** - Create accounts  
-ƒo. **Add Family Members** - Forms to add people  
-ƒo. **Upload Photos** - Click to upload face photos  
-ƒo. **Edit Members** - Change any info  
-ƒo. **Delete Members** - Remove people  
-ƒo. **3 User Roles** - Admin, Family Member, Viewer  
-ƒo. **Real-time Updates** - Changes show instantly  
-ƒo. **Dark Mode** - Pure black theme  
+✅ **Login/Signup** - Create accounts  
+✅ **Add Family Members** - Forms to add people  
+✅ **Upload Photos** - Click to upload face photos  
+✅ **Edit Members** - Change any info  
+✅ **Delete Members** - Remove people  
+✅ **3 User Roles** - Admin, Family Member, Viewer  
+✅ **Real-time Updates** - Changes show instantly  
+✅ **Dark Mode** - Pure black theme  
 
 ---
 
-## dYZ_ DEPLOYMENT STEPS (30 MINUTES)
+## 🎯 DEPLOYMENT STEPS (30 MINUTES)
 
 ### **STEP 1: Install Node.js**
 
@@ -48,7 +48,7 @@ Wait 2-3 minutes.
 firebase login
 ```
 
-Browser opens ƒ+' Sign in ƒ+' Done
+Browser opens → Sign in → Done
 
 ---
 
@@ -80,7 +80,7 @@ Wait 3-5 minutes. Downloads React, Firebase, etc.
 firebase deploy --only firestore:rules,storage:rules
 ```
 
-ƒo" This sets up who can read/write data
+✔ This sets up who can read/write data
 
 ---
 
@@ -104,16 +104,16 @@ Wait 1-2 minutes.
 
 You'll see:
 ```
-ƒo" Deploy complete!
+✔ Deploy complete!
 
 Hosting URL: https://medina-family-tree.web.app
 ```
 
-**dYZ% YOUR APP IS LIVE!**
+**🎉 YOUR APP IS LIVE!**
 
 ---
 
-## dY` STEP 9: CREATE ADMIN ACCOUNT
+## 👤 STEP 9: CREATE ADMIN ACCOUNT
 
 ### **A. Sign Up**
 
@@ -158,7 +158,7 @@ Hosting URL: https://medina-family-tree.web.app
 
 ---
 
-## dYZS YOU'RE DONE! NOW USE IT:
+## 🎊 YOU'RE DONE! NOW USE IT:
 
 ### **Add Your First Family Member:**
 
@@ -169,26 +169,26 @@ Hosting URL: https://medina-family-tree.web.app
    - Birthday: 03/19/1947
    - Location: (wherever he lives)
 3. Click **"Add Family Member"**
-4. Done! ƒo.
+4. Done! ✅
 
 ### **Upload a Photo:**
 
 1. Click **"Family Members"** in sidebar
 2. Find the person
-3. Click **"dY"ú Add Photo"**
+3. Click **"📷 Add Photo"**
 4. Choose a photo from your computer
 5. Wait for upload
 6. Done! Photo appears instantly!
 
 ---
 
-## dY"? ADD YOUR FAMILY:
+## 📝 ADD YOUR FAMILY:
 
 Now add:
-- ƒo. Ines Inoa (Mother) - 04/01/1955
-- ƒo. Dulce Maria Santos Almanzar (Anseli's Mother) - 11/15/1953
-- ƒo. Yourself (Jorge Medina) - 02/02/1977
-- ƒo. Anseli Medina (Spouse) - 04/21/1983
+- ✅ Ines Inoa (Mother) - 04/01/1955
+- ✅ Dulce Maria Santos Almanzar (Anseli's Mother) - 11/15/1953
+- ✅ Yourself (Jorge Medina) - 02/02/1977
+- ✅ Anseli Medina (Spouse) - 04/21/1983
 
 Then later:
 - Siblings
@@ -198,7 +198,7 @@ Then later:
 
 ---
 
-## dY` ADD ANSELI AS ADMIN:
+## 👥 ADD ANSELI AS ADMIN:
 
 1. Have Anseli sign up at your site
 2. Get her User UID from Authentication page
@@ -208,53 +208,53 @@ Then later:
 
 ---
 
-## dYZ_ WHAT YOU CAN DO NOW:
+## 🎯 WHAT YOU CAN DO NOW:
 
-ƒo. Add family members (name, birthday, relationship, location)  
-ƒo. Upload photos for each person  
-ƒo. Edit any member's info  
-ƒo. Delete members  
-ƒo. See total count and birthdays this month  
-ƒo. Real-time updates (no refresh needed)  
+✅ Add family members (name, birthday, relationship, location)  
+✅ Upload photos for each person  
+✅ Edit any member's info  
+✅ Delete members  
+✅ See total count and birthdays this month  
+✅ Real-time updates (no refresh needed)  
 
 ---
 
-## dY"r WHAT'S MISSING (Can Add Later):
+## 🔮 WHAT'S MISSING (Can Add Later):
 
-ƒ?O Beautiful visual family tree (tree diagram)  
-ƒ?O Birthday calendar with month slider  
-ƒ?O Location map with pins  
-ƒ?O Full UI from the static version  
+❌ Beautiful visual family tree (tree diagram)  
+❌ Birthday calendar with month slider  
+❌ Location map with pins  
+❌ Full UI from the static version  
 
 **These can be added in Phase 2 if you want!**
 
 ---
 
-## ƒsÿ‹,? IMPORTANT NOTES:
+## ⚠️ IMPORTANT NOTES:
 
 ### **Who Can Do What:**
 
 **Admin (you & Anseli):**
-- ƒo. Add members
-- ƒo. Edit any member
-- ƒo. Delete members
-- ƒo. Upload photos
+- ✅ Add members
+- ✅ Edit any member
+- ✅ Delete members
+- ✅ Upload photos
 
 **Family Member:**
-- ƒo. View all members
-- ƒo. Edit their own profile only
-- ƒ?O Can't add/delete
+- ✅ View all members
+- ✅ Edit their own profile only
+- ❌ Can't add/delete
 
 **Viewer:**
-- ƒo. View all members only
-- ƒ?O Can't edit anything
+- ✅ View all members only
+- ❌ Can't edit anything
 
 ---
 
-## dY+~ TROUBLESHOOTING:
+## 🆘 TROUBLESHOOTING:
 
 **"npm: command not found"**
-ƒ+' Install Node.js from nodejs.org
+→ Install Node.js from nodejs.org
 
 **"firebase: command not found"**
 ```bash
@@ -271,25 +271,25 @@ sudo npm install -g firebase-tools
 2. Run `npm install` again
 
 **Don't see "Add Member" button:**
-ƒ+' Make sure you set role to "admin" in Firestore
+→ Make sure you set role to "admin" in Firestore
 
 **Photo upload fails:**
-ƒ+' Check file is under 5MB and is an image (jpg, png, etc.)
+→ Check file is under 5MB and is an image (jpg, png, etc.)
 
 ---
 
-## dY"z NEXT STEPS:
+## 📞 NEXT STEPS:
 
-1. ƒo. Deploy the app (follow steps above)
-2. ƒo. Create your admin account
-3. ƒo. Add your 5 family members
-4. ƒo. Upload photos
-5. ƒo. Have Anseli sign up and make her admin
-6. ƒo. Start adding more family!
+1. ✅ Deploy the app (follow steps above)
+2. ✅ Create your admin account
+3. ✅ Add your 5 family members
+4. ✅ Upload photos
+5. ✅ Have Anseli sign up and make her admin
+6. ✅ Start adding more family!
 
 ---
 
-## dY'­ FUTURE ENHANCEMENTS (Optional):
+## 💡 FUTURE ENHANCEMENTS (Optional):
 
 If you want the full beautiful UI later:
 - Visual family tree diagram
@@ -302,6 +302,6 @@ If you want the full beautiful UI later:
 
 ---
 
-**Your app: https://medina-family-tree.web.app** dYO3
+**Your app: https://medina-family-tree.web.app** 🌳
 
-Ready to deploy? Start with Step 1! dYs?
+Ready to deploy? Start with Step 1! 🚀

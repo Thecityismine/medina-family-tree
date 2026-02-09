@@ -9,18 +9,25 @@ import './App.css';
 function App() {
   const [user, setUser] = useState(null);
   const [userRole, setUserRole] = useState(null);
+  const [showLogin, setShowLogin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
-        
-        // Get user role from Firestore
-        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-        if (userDoc.exists()) {
-          setUserRole(userDoc.data().role);
+
+        // Authenticated users default to viewer until an explicit role is found.
+        let role = 'viewer';
+        try {
+          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+          if (userDoc.exists() && userDoc.data().role) {
+            role = userDoc.data().role;
+          }
+        } catch (error) {
+          console.error('Error loading user role:', error);
         }
+        setUserRole(role);
       } else {
         setUser(null);
         setUserRole(null);
@@ -31,6 +38,12 @@ function App() {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (user && showLogin) {
+      setShowLogin(false);
+    }
+  }, [user, showLogin]);
+
   if (loading) {
     return (
       <div className="loading-screen">
@@ -40,11 +53,16 @@ function App() {
     );
   }
 
-  if (!user) {
-    return <Login />;
-  }
-
-  return <Dashboard user={user} userRole={userRole} />;
+  return (
+    <>
+      <Dashboard
+        user={user}
+        userRole={userRole}
+        onRequestLogin={() => setShowLogin(true)}
+      />
+      {showLogin && !user && <Login onClose={() => setShowLogin(false)} />}
+    </>
+  );
 }
 
 export default App;

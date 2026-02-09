@@ -1,0 +1,317 @@
+.birthday-calendar {
+  max-width: 1200px;
+}
+
+.calendar-header {
+  margin-bottom: 32px;
+}
+
+.calendar-header h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  color: #F5F5F7;
+  margin-bottom: 8px;
+}
+
+.calendar-subtitle {
+  color: #8E8E93;
+  font-size: 16px;
+}
+
+/* Stats Dashboard */
+.birthday-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 48px;
+}
+
+.birthday-stats .stat-card {
+  background: #000000;
+  border: 1px solid #2C2C2E;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.birthday-stats .stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  border-color: #B8956A;
+}
+
+.birthday-stats .stat-number {
+  font-family: 'Playfair Display', serif;
+  font-size: 48px;
+  color: #B8956A;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.birthday-stats .stat-label {
+  font-size: 14px;
+  color: #8E8E93;
+}
+
+/* Upcoming Section */
+.upcoming-section {
+  margin-bottom: 48px;
+}
+
+.upcoming-section h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  color: #F5F5F7;
+  margin-bottom: 24px;
+}
+
+/* Birthday Cards */
+.birthday-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.birthday-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: #000000;
+  border: 1px solid #2C2C2E;
+  border-radius: 12px;
+  transition: all 0.3s;
+}
+
+.birthday-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+}
+
+.birthday-card.today {
+  border-color: #B8956A;
+  background: rgba(184, 149, 106, 0.05);
+}
+
+.birthday-card.soon {
+  border-color: rgba(184, 149, 106, 0.3);
+}
+
+.birthday-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #B8956A 0%, #4A5D4F 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  font-weight: 600;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.birthday-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.birthday-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.birthday-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #F5F5F7;
+  margin-bottom: 4px;
+}
+
+.birthday-date {
+  font-size: 14px;
+  color: #8E8E93;
+}
+
+.days-badge {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: #2C2C2E;
+  color: #F5F5F7;
+}
+
+.days-badge.today {
+  background: #B8956A;
+  color: white;
+  animation: pulse 2s infinite;
+}
+
+.days-badge.soon {
+  background: rgba(184, 149, 106, 0.2);
+  color: #B8956A;
+  border: 1px solid rgba(184, 149, 106, 0.3);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Month Section */
+.month-section {
+  margin-bottom: 32px;
+}
+
+.month-section h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  color: #F5F5F7;
+  margin-bottom: 20px;
+}
+
+.month-selector {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.month-selector::-webkit-scrollbar {
+  height: 8px;
+}
+
+.month-selector::-webkit-scrollbar-track {
+  background: #1C1C1E;
+  border-radius: 4px;
+}
+
+.month-selector::-webkit-scrollbar-thumb {
+  background: #2C2C2E;
+  border-radius: 4px;
+}
+
+.month-selector::-webkit-scrollbar-thumb:hover {
+  background: #B8956A;
+}
+
+.month-btn {
+  flex-shrink: 0;
+  padding: 12px 20px;
+  background: #2C2C2E;
+  border: 1px solid #38383A;
+  border-radius: 8px;
+  color: #8E8E93;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.month-btn:hover {
+  background: #1C1C1E;
+  border-color: #B8956A;
+  color: #F5F5F7;
+}
+
+.month-btn.active {
+  background: #B8956A;
+  border-color: #B8956A;
+  color: white;
+}
+
+.month-btn .count {
+  margin-left: 6px;
+  opacity: 0.7;
+  font-size: 12px;
+}
+
+/* Month Detail */
+.month-detail {
+  padding-top: 32px;
+  border-top: 1px solid #2C2C2E;
+}
+
+.month-detail h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  color: #F5F5F7;
+  margin-bottom: 24px;
+}
+
+.empty-month {
+  text-align: center;
+  padding: 60px 20px;
+  color: #8E8E93;
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.empty-month p {
+  font-size: 16px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .birthday-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .birthday-stats .stat-number {
+    font-size: 40px;
+  }
+  
+  .birthday-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .birthday-card {
+    padding: 16px;
+  }
+  
+  .birthday-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+  
+  .birthday-name {
+    font-size: 16px;
+  }
+  
+  .birthday-date {
+    font-size: 13px;
+  }
+  
+  .month-selector {
+    margin-left: -32px;
+    margin-right: -32px;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+  
+  .calendar-header h2 {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .birthday-stats {
+    grid-template-columns: 1fr;
+  }
+}

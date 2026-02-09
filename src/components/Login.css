@@ -7,6 +7,13 @@
   background: #000000;
 }
 
+.login-container.is-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.78);
+}
+
 .login-box {
   width: 100%;
   max-width: 450px;
@@ -14,6 +21,20 @@
   border-radius: 16px;
   padding: 40px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  position: relative;
+}
+
+.login-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #38383A;
+  border-radius: 8px;
+  background: #2C2C2E;
+  color: #F5F5F7;
+  cursor: pointer;
 }
 
 .login-header {
