@@ -4,7 +4,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'fire
 import { doc, setDoc } from 'firebase/firestore';
 import './Login.css';
 
-function Login() {
+function Login({ onCancel }) {
   const [isSignup, setIsSignup] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -102,6 +102,12 @@ function Login() {
               <>Need an account? <button type="button" onClick={() => setIsSignup(true)}>Sign Up</button></>
             )}
           </div>
+
+          {onCancel && (
+            <div className="toggle-mode">
+              <button type="button" onClick={onCancel}>Continue as Guest</button>
+            </div>
+          )}
         </form>
 
         <div className="login-info">

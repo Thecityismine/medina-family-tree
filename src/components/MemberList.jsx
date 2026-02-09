@@ -44,7 +44,7 @@ const RELATIONSHIP_OPTIONS = [
   'You (Admin)'
 ];
 
-function MemberList({ members, isAdmin }) {
+function MemberList({ members, canEdit }) {
   const [editingMember, setEditingMember] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(null);
   const [expandedMembers, setExpandedMembers] = useState(() => new Set());
@@ -248,7 +248,7 @@ function MemberList({ members, isAdmin }) {
                       </div>
                     )}
 
-                    {isAdmin && (
+                    {canEdit && (
                       <label className="photo-upload-btn">
                         {uploadingPhoto === member.id ? (
                           <span>Uploading...</span>
@@ -318,7 +318,7 @@ function MemberList({ members, isAdmin }) {
                     )}
                   </div>
 
-                  {isAdmin && (
+                  {canEdit && (
                     <div className="member-actions">
                       <button
                         className="btn-edit"

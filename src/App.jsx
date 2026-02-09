@@ -9,12 +9,15 @@ import './App.css';
 function App() {
   const [user, setUser] = useState(null);
   const [userRole, setUserRole] = useState(null);
+  const [showLogin, setShowLogin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
+        setShowLogin(false);
+        setUserRole(null);
         
         // Get user role from Firestore
         const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
@@ -40,11 +43,17 @@ function App() {
     );
   }
 
-  if (!user) {
-    return <Login />;
+  if (!user && showLogin) {
+    return <Login onCancel={() => setShowLogin(false)} />;
   }
 
-  return <Dashboard user={user} userRole={userRole} />;
+  return (
+    <Dashboard
+      user={user}
+      userRole={userRole}
+      onSignIn={() => setShowLogin(true)}
+    />
+  );
 }
 
 export default App;

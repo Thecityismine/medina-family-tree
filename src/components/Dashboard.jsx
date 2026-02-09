@@ -12,7 +12,7 @@ import Settings from './Settings';
 import { parseBirthDate } from '../utils/birthdays';
 import './Dashboard.css';
 
-function Dashboard({ user, userRole }) {
+function Dashboard({ user, userRole, onSignIn }) {
   const [view, setView] = useState('home');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [members, setMembers] = useState([]);
@@ -60,11 +60,21 @@ function Dashboard({ user, userRole }) {
     }
   };
 
-  const isAdmin = userRole === 'admin';
+  const isAuthenticated = Boolean(user);
+  const canEdit = isAuthenticated;
+  const userInitial = isAuthenticated ? (user.email?.charAt(0).toUpperCase() || 'U') : 'G';
+  const userName = isAuthenticated ? (user.email || 'Signed in user') : 'Guest viewer';
+  const roleLabel = isAuthenticated ? (userRole || 'editor') : 'public view';
   const viewTitle = view === 'list'
     ? 'Family Members'
     : 'Add Family Member';
   const showHeader = view === 'list' || view === 'add';
+
+  useEffect(() => {
+    if (!canEdit && (view === 'add' || view === 'settings')) {
+      setView('home');
+    }
+  }, [canEdit, view]);
 
   const handleNavigate = (nextView) => {
     setView(nextView);
@@ -84,11 +94,11 @@ function Dashboard({ user, userRole }) {
 
         <div className="user-info">
           <div className="user-avatar">
-            {user.email?.charAt(0).toUpperCase()}
+            {userInitial}
           </div>
           <div className="user-details">
-            <div className="user-name">{user.email}</div>
-            <div className="user-role">{userRole || 'viewer'}</div>
+            <div className="user-name">{userName}</div>
+            <div className="user-role">{roleLabel}</div>
           </div>
         </div>
 
@@ -123,7 +133,7 @@ function Dashboard({ user, userRole }) {
           >
             Locations
           </button>
-          {isAdmin && (
+          {canEdit && (
             <button
               className={view === 'add' ? 'nav-item active' : 'nav-item'}
               onClick={() => handleNavigate('add')}
@@ -131,17 +141,25 @@ function Dashboard({ user, userRole }) {
               Add Member
             </button>
           )}
-          <button
-            className={view === 'settings' ? 'nav-item active' : 'nav-item'}
-            onClick={() => handleNavigate('settings')}
-          >
-            Settings
-          </button>
+          {canEdit && (
+            <button
+              className={view === 'settings' ? 'nav-item active' : 'nav-item'}
+              onClick={() => handleNavigate('settings')}
+            >
+              Settings
+            </button>
+          )}
         </nav>
 
-        <button className="btn-logout" onClick={handleSignOut}>
-          Sign Out
-        </button>
+        {isAuthenticated ? (
+          <button className="btn-logout" onClick={handleSignOut}>
+            Sign Out
+          </button>
+        ) : (
+          <button className="btn-logout" onClick={onSignIn}>
+            Sign In to Edit
+          </button>
+        )}
       </div>
 
       {isSidebarOpen && (
@@ -169,7 +187,7 @@ function Dashboard({ user, userRole }) {
         {showHeader && (
           <div className="content-header">
             <h2>{viewTitle}</h2>
-            {!isAdmin && view === 'list' && (
+            {!canEdit && view === 'list' && (
               <div className="viewer-notice">
                 View-only access
               </div>
@@ -204,9 +222,9 @@ function Dashboard({ user, userRole }) {
             <FamilyTree members={members} />
           )}
           {view === 'list' && (
-            <MemberList members={members} isAdmin={isAdmin} />
+            <MemberList members={members} canEdit={canEdit} />
           )}
-          {view === 'add' && isAdmin && (
+          {view === 'add' && canEdit && (
             <AddMemberForm members={members} onSuccess={() => handleNavigate('list')} />
           )}
           {view === 'birthdays' && (
@@ -215,7 +233,7 @@ function Dashboard({ user, userRole }) {
           {view === 'locations' && (
             <LocationMap members={members} />
           )}
-          {view === 'settings' && (
+          {view === 'settings' && canEdit && (
             <Settings user={user} userRole={userRole} members={members} />
           )}
         </div>
