@@ -1,5 +1,6 @@
 import React from 'react';
 import { CARD_WIDTH, CARD_HEIGHT } from '../utils/familyTreeLayout';
+import { Avatar } from './ui';
 
 const NODE_WIDTH = 156;
 const NODE_HEIGHT = 116;
@@ -42,13 +43,9 @@ function FamilyTreeCanvasNode({
         </span>
       )}
 
-      <div className="ftc-node-photo">
-        {member.photoURL ? (
-          <img src={member.photoURL} alt={member.name} />
-        ) : (
-          <div className="ftc-node-initial">{member.name?.charAt(0).toUpperCase()}</div>
-        )}
-      </div>
+      {/* Stays small on purpose: node geometry is fixed in JS (NODE_HEIGHT),
+          and the canvas is a zoomed-out overview, not a portrait gallery. */}
+      <Avatar member={member} size="sm" ring className="ftc-node-photo" />
 
       <div className="ftc-node-name">{member.name}</div>
       <div className="ftc-node-relation">{member.relationship || 'Family Member'}</div>

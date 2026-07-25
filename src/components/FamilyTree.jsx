@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Avatar, Card, Icon, SegmentedControl, Stat } from './ui';
 import { calculateAge, parseBirthDate } from '../utils/birthdays';
 import { computeGenerations, getGenerationTitle } from '../utils/familyTreeGenerations';
 import MemberDetailModal from './MemberDetailModal';
@@ -102,36 +103,31 @@ function FamilyTree({ members }) {
         <p className="tree-subtitle">Est. 1947</p>
       </div>
 
+      {/* Was two free-floating pills with no shared track, so they read as
+          unrelated buttons rather than as alternatives. */}
       <div className="tree-mode-toggle">
-        <button
-          type="button"
-          className={mode === 'list' ? 'tree-mode-btn active' : 'tree-mode-btn'}
-          onClick={() => setMode('list')}
-        >
-          List View
-        </button>
-        <button
-          type="button"
-          className={mode === 'canvas' ? 'tree-mode-btn active' : 'tree-mode-btn'}
-          onClick={() => setMode('canvas')}
-        >
-          Canvas View
-        </button>
+        <SegmentedControl
+          ariaLabel="Tree view"
+          value={mode}
+          onChange={setMode}
+          size="lg"
+          options={[
+            { value: 'list', label: 'List View', icon: <Icon name="grid" size={16} /> },
+            { value: 'canvas', label: 'Canvas View', icon: <Icon name="tree" size={16} /> }
+          ]}
+        />
       </div>
 
       <div className="tree-stats">
-        <div className="tree-stat-card">
-          <div className="tree-stat-number">{treeData.stats.totalGenerations}</div>
-          <div className="tree-stat-label">Generations</div>
-        </div>
-        <div className="tree-stat-card">
-          <div className="tree-stat-number">{treeData.stats.totalMembers}</div>
-          <div className="tree-stat-label">Family Members</div>
-        </div>
-        <div className="tree-stat-card">
-          <div className="tree-stat-number">{treeData.stats.largestGeneration}</div>
-          <div className="tree-stat-label">Largest Generation</div>
-        </div>
+        <Card surface="1" pad="md">
+          <Stat value={treeData.stats.totalGenerations} label="Generations" />
+        </Card>
+        <Card surface="1" pad="md">
+          <Stat value={treeData.stats.totalMembers} label="Family Members" />
+        </Card>
+        <Card surface="1" pad="md">
+          <Stat value={treeData.stats.largestGeneration} label="Largest Generation" />
+        </Card>
       </div>
 
       {mode === 'canvas' ? (
@@ -174,15 +170,7 @@ function FamilyTree({ members }) {
                         </svg>
                       </span>
                     )}
-                    <div className="tree-person-photo">
-                      {member.photoURL ? (
-                        <img src={member.photoURL} alt={member.name} />
-                      ) : (
-                        <div className="tree-person-initial">
-                          {member.name?.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                    </div>
+                    <Avatar member={member} size="lg" ring className="tree-person-photo" />
 
                     <div className="tree-person-info">
                       <div className="tree-person-name">{member.name}</div>

@@ -5,6 +5,7 @@ import {
   getNextBirthdayDate,
   parseBirthDate
 } from '../utils/birthdays';
+import { Avatar, Badge, Card, Icon, Stat } from './ui';
 import './BirthdayCalendar.css';
 
 function BirthdayCalendar({ members }) {
@@ -146,22 +147,10 @@ function BirthdayCalendar({ members }) {
       </div>
 
       <div className="birthday-stats">
-        <div className="stat-card">
-          <div className="stat-number">{stats.thisMonth}</div>
-          <div className="stat-label">This Month</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-number">{stats.next30Days}</div>
-          <div className="stat-label">Next 30 Days</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-number">{stats.total}</div>
-          <div className="stat-label">Total Birthdays</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-number">{stats.averageAge}</div>
-          <div className="stat-label">Average Age</div>
-        </div>
+        <Card surface="1" pad="md"><Stat value={stats.thisMonth} label="This Month" /></Card>
+        <Card surface="1" pad="md"><Stat value={stats.next30Days} label="Next 30 Days" /></Card>
+        <Card surface="1" pad="md"><Stat value={stats.total} label="Total Birthdays" /></Card>
+        <Card surface="1" pad="md"><Stat value={stats.averageAge} label="Average Age" /></Card>
       </div>
 
       {upcomingBirthdays.length > 0 && (
@@ -172,13 +161,7 @@ function BirthdayCalendar({ members }) {
               const badge = getDaysBadge(member.daysUntil);
               return (
                 <div key={member.id} className={`birthday-card ${badge.class}`}>
-                  <div className="birthday-avatar">
-                    {member.photoURL ? (
-                      <img src={member.photoURL} alt={member.name} />
-                    ) : (
-                      member.name?.charAt(0).toUpperCase()
-                    )}
-                  </div>
+                  <Avatar member={member} size="lg" ring className="birthday-avatar" />
                   <div className="birthday-info">
                     <div className="birthday-name">{member.name}</div>
                     <div className="birthday-date">
@@ -186,7 +169,7 @@ function BirthdayCalendar({ members }) {
                       {member.turningAge && ` - Turning ${member.turningAge}`}
                     </div>
                   </div>
-                  <div className={`days-badge ${badge.class}`}>{badge.text}</div>
+                  <Badge tone={badge.class === 'today' ? 'solid' : badge.class === 'soon' ? 'gold' : 'neutral'}>{badge.text}</Badge>
                 </div>
               );
             })}
@@ -196,7 +179,7 @@ function BirthdayCalendar({ members }) {
 
       <div className="month-section">
         <h3>Browse All Months</h3>
-        <div className="month-selector">
+        <div className="month-selector scroll-x">
           {months.map((month, index) => {
             const count = getMonthCount(index);
             return (
@@ -221,13 +204,7 @@ function BirthdayCalendar({ members }) {
               const badge = getDaysBadge(member.daysUntil);
               return (
                 <div key={member.id} className={`birthday-card ${badge.class}`}>
-                  <div className="birthday-avatar">
-                    {member.photoURL ? (
-                      <img src={member.photoURL} alt={member.name} />
-                    ) : (
-                      member.name?.charAt(0).toUpperCase()
-                    )}
-                  </div>
+                  <Avatar member={member} size="lg" ring className="birthday-avatar" />
                   <div className="birthday-info">
                     <div className="birthday-name">{member.name}</div>
                     <div className="birthday-date">
@@ -236,7 +213,7 @@ function BirthdayCalendar({ members }) {
                     </div>
                   </div>
                   {member.daysUntil <= 30 && (
-                    <div className={`days-badge ${badge.class}`}>{badge.text}</div>
+                    <Badge tone={badge.class === 'today' ? 'solid' : badge.class === 'soon' ? 'gold' : 'neutral'}>{badge.text}</Badge>
                   )}
                 </div>
               );
@@ -244,7 +221,7 @@ function BirthdayCalendar({ members }) {
           </div>
         ) : (
           <div className="empty-month">
-            <div className="empty-icon">0</div>
+            <Icon name="cake" size={40} className="empty-icon" />
             <p>No birthdays in {months[selectedMonth]}</p>
           </div>
         )}

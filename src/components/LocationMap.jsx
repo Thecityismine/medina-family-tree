@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import { Avatar } from './ui';
 import './LocationMap.css';
 
 const getFlagCode = (location, country) => {
@@ -311,13 +312,7 @@ function LocationMap({ members }) {
               <div className="location-members">
                 {loc.members.slice(0, 3).map((member) => (
                   <div key={member.id} className="location-member-chip">
-                    <div className="member-chip-avatar">
-                      {member.photoURL ? (
-                        <img src={member.photoURL} alt={member.name} />
-                      ) : (
-                        member.name?.charAt(0).toUpperCase()
-                      )}
-                    </div>
+                    <Avatar member={member} size="xs" className="member-chip-avatar" />
                     <span>{member.name}</span>
                   </div>
                 ))}
@@ -361,15 +356,7 @@ function LocationMap({ members }) {
               <div className="location-modal-members">
                 {selectedLocation.members.map((member) => (
                   <div key={member.id} className="modal-member-card">
-                    <div className="modal-member-avatar">
-                      {member.photoURL ? (
-                        <img src={member.photoURL} alt={member.name} />
-                      ) : (
-                        <div className="modal-member-initial">
-                          {member.name?.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                    </div>
+                    <Avatar member={member} size="md" ring className="modal-member-avatar" />
                     <div className="modal-member-info">
                       <div className="modal-member-name">{member.name}</div>
                       <div className="modal-member-relation">{member.relationship}</div>

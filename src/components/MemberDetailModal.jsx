@@ -1,5 +1,6 @@
 import React from 'react';
 import { calculateAge, formatBirthDate } from '../utils/birthdays';
+import { Avatar } from './ui';
 import './FamilyTree.css';
 
 const formatCreatedAt = (value) => {
@@ -61,15 +62,7 @@ function MemberDetailModal({ member, members, onClose }) {
         <button className="tree-modal-close" onClick={onClose}>X</button>
 
         <div className="tree-modal-header">
-          <div className="tree-modal-photo">
-            {member.photoURL ? (
-              <img src={member.photoURL} alt={member.name} />
-            ) : (
-              <div className="tree-modal-initial">
-                {member.name?.charAt(0).toUpperCase()}
-              </div>
-            )}
-          </div>
+          <Avatar member={member} size="xl" ring className="tree-modal-photo" />
           <div className="tree-modal-title">
             <h3>{member.name}</h3>
             <p>{member.relationship || 'Family Member'}</p>

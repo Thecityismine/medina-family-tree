@@ -1,0 +1,171 @@
+/* ==========================================================================
+   MEDINA FAMILY — DESIGN TOKENS (Layer 0)
+   Warm dark theme. Single source of truth for every visual value.
+
+   RULES
+   1. No component may declare a raw hex, rgba, px radius, or transition
+      duration. If a value is missing here, add it here.
+   2. Surfaces come from the ramp. Depth = surface step + elevation, never
+      a border alone.
+   3. Never `background: #000`. Pure black cannot render a shadow, which is
+      why the old UI read as flat outlined rectangles.
+   ========================================================================== */
+
+:root {
+  /* ---------------------------------------------------------------- SURFACE
+     Warm charcoal ramp (hue ~40deg, low sat) instead of Apple's cool grays.
+     Each step is a real elevation level: bg < surface-1 < surface-2 < ...   */
+  --bg:            #14120F;  /* page. warm near-black, NOT #000 */
+  --bg-sunken:     #0E0C0A;  /* wells, insets, canvas backdrop */
+  --surface-1:     #1C1A16;  /* cards, sidebar */
+  --surface-2:     #24211C;  /* raised card, nested well */
+  --surface-3:     #2E2A24;  /* inputs, inactive controls */
+  --surface-4:     #3A352D;  /* control hover */
+  --scrim:         rgba(14, 12, 10, 0.72); /* modal/drawer backdrop */
+
+  /* --------------------------------------------------------------- HAIRLINE
+     Alpha, not solid hex, so a border composites correctly over ANY surface
+     step. Replaces the old #2C2C2E / #38383A borders.                       */
+  --hairline:        rgba(245, 241, 234, 0.08);
+  --hairline-strong: rgba(245, 241, 234, 0.14);
+  --hairline-gold:   rgba(198, 162, 107, 0.28);
+
+  /* -------------------------------------------------------------------- INK
+     Warm ivory text, not #F5F5F7 cool white.                               */
+  --ink-50:   #F5F1EA;  /* headings, primary   — 15.9:1 on --bg */
+  --ink-200:  #DED8CC;  /* strong body */
+  --ink-300:  #C9C1B4;  /* body */
+  --ink-500:  #9A9288;  /*  muted, labels      —  5.4:1 on --bg */
+  --ink-600:  #7A736A;  /* disabled, hints */
+
+  /* ------------------------------------------------------------------- GOLD
+     Lifted for a dark field. Text vs fill are DIFFERENT steps — this is the
+     fix for the old `color: white` on gold, which was only 2.78:1.          */
+  --gold-300: #E3CCA0;  /* rare, max emphasis */
+  --gold-400: #D4B57E;  /* accent TEXT, stat numbers — 9.65:1 on --bg */
+  --gold-500: #C6A26B;  /* FILLS: primary button, active pill */
+  --gold-600: #A07D52;  /* fill hover / pressed */
+  --gold-700: #7A5E3E;  /* deep border, gold-on-gold edge */
+  --on-gold:  #1A1509;  /* text ON a gold fill        — 7.78:1 on gold-500 */
+
+  --gold-tint-8:  rgba(198, 162, 107, 0.08); /* selected row wash */
+  --gold-tint-16: rgba(198, 162, 107, 0.16); /* active nav wash */
+  --gold-tint-24: rgba(198, 162, 107, 0.24); /* badge fill */
+
+  /* ------------------------------------------------------- LINEAGE SEMANTIC
+     The tree's two relationship types. Named by MEANING so the canvas legend
+     and the connector strokes can never drift apart.                        */
+  --link-descent:  #6E8B75;  /* parent -> child  (sage) */
+  --link-union:    #D66C86;  /* spouse <-> spouse (rose) */
+  --link-inactive: rgba(245, 241, 234, 0.16);
+
+  --sage-500: #6E8B75;
+  --sage-600: #4A5D4F;
+  --rose-500: #D66C86;
+
+  /* --------------------------------------------------------------- FEEDBACK
+     All lifted for legibility on a dark field.                             */
+  --success:      #5FBF6A;
+  --success-tint: rgba(95, 191, 106, 0.14);
+  --warning:      #FFB03A;
+  --warning-tint: rgba(255, 176, 58, 0.14);
+  --danger:       #FF6B60;
+  --danger-tint:  rgba(255, 107, 96, 0.14);
+  --danger-edge:  rgba(255, 107, 96, 0.32);
+
+  /* -------------------------------------------------------------- ELEVATION
+     Drop shadow + inset rim highlight. The rim is what actually separates a
+     card on dark — a shadow alone is nearly invisible. This is the single
+     biggest visual upgrade in the token set.                               */
+  --elev-1: 0 1px 2px rgba(0, 0, 0, 0.40),
+            inset 0 1px 0 rgba(245, 241, 234, 0.04);
+  --elev-2: 0 4px 16px rgba(0, 0, 0, 0.50),
+            inset 0 1px 0 rgba(245, 241, 234, 0.05);
+  --elev-3: 0 12px 32px rgba(0, 0, 0, 0.60),
+            inset 0 1px 0 rgba(245, 241, 234, 0.06);
+  --elev-4: 0 24px 64px rgba(0, 0, 0, 0.70),
+            inset 0 1px 0 rgba(245, 241, 234, 0.06);
+  /* Warm ambient glow — for hero art and the focused tree node only. */
+  --glow-gold: 0 0 0 1px var(--hairline-gold),
+               0 8px 32px rgba(198, 162, 107, 0.16);
+
+  /* ----------------------------------------------------------------- SPACE
+     8-pt scale. Never use an off-scale value.                              */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  /* ----------------------------------------------------------------- RADIUS
+     Was 9 arbitrary values (incl. an 11px). Now 4 + pill.                  */
+  --r-sm:   8px;   /* controls, inputs, badges */
+  --r-md:   12px;  /* cards, tiles */
+  --r-lg:   16px;  /* panels, modals */
+  --r-xl:   24px;  /* hero, feature surface */
+  --r-full: 999px; /* pills, avatars */
+
+  /* ----------------------------------------------------------------- MOTION
+     Was `transition: all 0.3s` x40 — too slow, and animating layout props.
+     Always transition NAMED properties.                                    */
+  --dur-fast: 120ms;  /* hover, tint change */
+  --dur-base: 180ms;  /* most state changes */
+  --dur-slow: 280ms;  /* panels, drawers */
+  --dur-xslow: 460ms; /* hero / tree entrance */
+  --ease-out:    cubic-bezier(0.20, 0.80, 0.20, 1.00);
+  --ease-in-out: cubic-bezier(0.40, 0.00, 0.20, 1.00);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1.00);
+
+  /* ------------------------------------------------------------------ FOCUS
+     Was entirely absent (0 occurrences). Double ring so it reads on any
+     surface step.                                                          */
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--gold-500);
+
+  /* ---------------------------------------------------------------- AVATAR
+     Roughly 2x the old sizes — faces are the emotional payload of this app.
+     Old: 48 / 60 / 80.                                                     */
+  --avatar-xs: 32px;
+  --avatar-sm: 44px;
+  --avatar-md: 72px;   /* was 40-48 in lists */
+  --avatar-lg: 112px;  /* was 60 on birthday + tree cards */
+  --avatar-xl: 168px;  /* profile modal hero */
+
+  /* ---------------------------------------------------------------- LAYOUT */
+  --sidebar-w:     248px;  /* was 280 — reclaims 32px of content */
+  --content-max:   1200px; /* was 1400 — 1400 over-stretches card grids */
+  --measure:       68ch;   /* max line length for prose (notes, bio) */
+  --tabbar-h:      64px;   /* mobile bottom tab bar */
+  --header-h:      64px;
+
+  /* ------------------------------------------------------------------- Z
+     Named stack. Was ad-hoc 1500 / 2000 / 2001.                            */
+  --z-canvas:   1;
+  --z-sticky:   100;
+  --z-tabbar:   900;
+  --z-drawer:   1000;
+  --z-scrim:    1100;
+  --z-modal:    1200;
+  --z-toast:    1300;
+}
+
+/* Honour OS-level motion reduction. Required for polish, and cheap. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast:  0ms;
+    --dur-base:  0ms;
+    --dur-slow:  0ms;
+    --dur-xslow: 0ms;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

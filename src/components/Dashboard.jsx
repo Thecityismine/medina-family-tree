@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { auth, db } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
@@ -9,14 +9,27 @@ import FamilyTree from './FamilyTree';
 import HomeDashboard from './HomeDashboard';
 import LocationMap from './LocationMap';
 import Settings from './Settings';
-import { parseBirthDate } from '../utils/birthdays';
+import { Avatar, Badge, Button, Icon } from './ui';
 import './Dashboard.css';
+
+/* Single source of truth for navigation. Replaces 7 copy-pasted <button>
+   blocks that each repeated the same active-class ternary.
+   `tab: true` promotes an item into the mobile bottom bar. */
+const NAV_ITEMS = [
+  { id: 'home',      label: 'Home',           icon: 'home',     tab: true },
+  { id: 'tree',      label: 'Family Tree',    icon: 'tree',     tab: true },
+  { id: 'list',      label: 'Family Members', icon: 'users',    tab: true },
+  { id: 'birthdays', label: 'Birthdays',      icon: 'cake',     tab: true },
+  { id: 'locations', label: 'Locations',      icon: 'pin',      tab: true },
+  { id: 'add',       label: 'Add Member',     icon: 'plus',     requiresEdit: true },
+  { id: 'settings',  label: 'Settings',       icon: 'settings', requiresEdit: true }
+];
 
 function Dashboard({ user, userRole, onSignIn }) {
   const [view, setView] = useState('home');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [members, setMembers] = useState([]);
-  const [stats, setStats] = useState({ total: 0, thisMonth: 0 });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.innerWidth < 1024) {
@@ -25,28 +38,15 @@ function Dashboard({ user, userRole, onSignIn }) {
   }, []);
 
   useEffect(() => {
-    // Real-time listener for family members
     const q = query(collection(db, 'members'), orderBy('createdAt', 'desc'));
-    
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const memberData = [];
       snapshot.forEach((doc) => {
         memberData.push({ id: doc.id, ...doc.data() });
       });
-      
       setMembers(memberData);
-      
-      // Calculate stats
-      const currentMonth = new Date().getMonth();
-      const birthdaysThisMonth = memberData.filter(m => {
-        const birthDate = parseBirthDate(m.birthDate);
-        return birthDate ? birthDate.getMonth() === currentMonth : false;
-      }).length;
-      
-      setStats({
-        total: memberData.length,
-        thisMonth: birthdaysThisMonth
-      });
+      setIsLoading(false);
     });
 
     return () => unsubscribe();
@@ -62,13 +62,15 @@ function Dashboard({ user, userRole, onSignIn }) {
 
   const isAuthenticated = Boolean(user);
   const canEdit = isAuthenticated;
-  const userInitial = isAuthenticated ? (user.email?.charAt(0).toUpperCase() || 'U') : 'G';
   const userName = isAuthenticated ? (user.email || 'Signed in user') : 'Guest viewer';
-  const roleLabel = isAuthenticated ? (userRole || 'editor') : 'public view';
-  const viewTitle = view === 'list'
-    ? 'Family Members'
-    : 'Add Family Member';
-  const showHeader = view === 'list' || view === 'add';
+  const roleLabel = isAuthenticated ? (userRole || 'editor') : 'Public view';
+
+  const visibleNav = useMemo(
+    () => NAV_ITEMS.filter((item) => !item.requiresEdit || canEdit),
+    [canEdit]
+  );
+
+  const tabItems = useMemo(() => NAV_ITEMS.filter((item) => item.tab), []);
 
   useEffect(() => {
     if (!canEdit && (view === 'add' || view === 'settings')) {
@@ -83,84 +85,49 @@ function Dashboard({ user, userRole, onSignIn }) {
     }
   };
 
+  /* Screens that render their own page header own their whole layout; only
+     these two need the shell to supply a title. */
+  const headerTitle = view === 'list' ? 'Family Members' : view === 'add' ? 'Add Family Member' : null;
+
   return (
     <div className={`dashboard ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-      {/* Sidebar */}
-      <div className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
+      <aside className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
         <div className="sidebar-header">
           <h1>The Medina Family</h1>
-          <p>Est. 1947</p>
+          <p className="t-label">Est. 1947</p>
         </div>
 
         <div className="user-info">
-          <div className="user-avatar">
-            {userInitial}
-          </div>
+          <Avatar name={isAuthenticated ? userName : 'Guest'} size="sm" ring />
           <div className="user-details">
-            <div className="user-name">{userName}</div>
+            <div className="user-name t-truncate">{userName}</div>
             <div className="user-role">{roleLabel}</div>
           </div>
         </div>
 
-        <nav className="nav">
-          <button
-            className={view === 'home' ? 'nav-item active' : 'nav-item'}
-            onClick={() => handleNavigate('home')}
-          >
-            Home
-          </button>
-          <button
-            className={view === 'tree' ? 'nav-item active' : 'nav-item'}
-            onClick={() => handleNavigate('tree')}
-          >
-            Family Tree
-          </button>
-          <button
-            className={view === 'list' ? 'nav-item active' : 'nav-item'}
-            onClick={() => handleNavigate('list')}
-          >
-            Family Members
-          </button>
-          <button
-            className={view === 'birthdays' ? 'nav-item active' : 'nav-item'}
-            onClick={() => handleNavigate('birthdays')}
-          >
-            Birthdays
-          </button>
-          <button
-            className={view === 'locations' ? 'nav-item active' : 'nav-item'}
-            onClick={() => handleNavigate('locations')}
-          >
-            Locations
-          </button>
-          {canEdit && (
+        <nav className="nav" aria-label="Main">
+          {visibleNav.map((item) => (
             <button
-              className={view === 'add' ? 'nav-item active' : 'nav-item'}
-              onClick={() => handleNavigate('add')}
+              key={item.id}
+              className={view === item.id ? 'nav-item active' : 'nav-item'}
+              onClick={() => handleNavigate(item.id)}
+              aria-current={view === item.id ? 'page' : undefined}
             >
-              Add Member
+              <Icon name={item.icon} size={18} />
+              <span className="nav-item__label">{item.label}</span>
             </button>
-          )}
-          {canEdit && (
-            <button
-              className={view === 'settings' ? 'nav-item active' : 'nav-item'}
-              onClick={() => handleNavigate('settings')}
-            >
-              Settings
-            </button>
-          )}
+          ))}
         </nav>
 
-        {isAuthenticated ? (
-          <button className="btn-logout" onClick={handleSignOut}>
-            Sign Out
-          </button>
-        ) : (
-          <button className="btn-logout" onClick={onSignIn}>
-            Sign In to Edit
-          </button>
-        )}
-      </div>
+        <Button
+          variant={isAuthenticated ? 'ghost' : 'primary'}
+          full
+          onClick={isAuthenticated ? handleSignOut : onSignIn}
+        >
+          <Icon name={isAuthenticated ? 'signOut' : 'signIn'} size={18} />
+          {isAuthenticated ? 'Sign Out' : 'Sign In to Edit'}
+        </Button>
+      </aside>
 
       {isSidebarOpen && (
         <div
@@ -170,74 +137,72 @@ function Dashboard({ user, userRole, onSignIn }) {
         />
       )}
 
-      {/* Main Content */}
       <div className="main-content">
         <div className="main-toolbar">
           <button
             className="menu-toggle"
             onClick={() => setIsSidebarOpen((open) => !open)}
-            aria-label="Toggle menu"
+            aria-label={isSidebarOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={isSidebarOpen}
           >
-            <span className="menu-bar"></span>
-            <span className="menu-bar"></span>
-            <span className="menu-bar"></span>
+            <Icon name={isSidebarOpen ? 'close' : 'menu'} size={20} />
           </button>
         </div>
-        {showHeader && (
-          <div className="content-header">
-            <h2>{viewTitle}</h2>
-            {!canEdit && view === 'list' && (
-              <div className="viewer-notice">
-                View-only access
-              </div>
-            )}
-          </div>
+
+        {headerTitle && (
+          <header className="content-header">
+            <h2>{headerTitle}</h2>
+            {!canEdit && view === 'list' && <Badge tone="gold" dot>View-only access</Badge>}
+          </header>
         )}
 
-        {/* Stats */}
-        {view === 'list' && (
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-number">{stats.total}</div>
-              <div className="stat-label">Family Members</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-number">{stats.thisMonth}</div>
-              <div className="stat-label">Birthdays This Month</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-number">2</div>
-              <div className="stat-label">Generations</div>
-            </div>
-          </div>
-        )}
-
-        {/* Content */}
-        <div className="content-body">
+        {/*
+          NESTING TEARDOWN.
+          This used to be `.content-body` — a bordered, padded, 16px-radius
+          card wrapping EVERY screen. Since each screen also draws its own
+          cards, every view was three boxes deep. It is now an unstyled
+          <main>; each screen owns its own surfaces.
+        */}
+        <main className="view">
           {view === 'home' && (
-            <HomeDashboard members={members} user={user} onNavigate={handleNavigate} />
+            <HomeDashboard
+              members={members}
+              user={user}
+              isLoading={isLoading}
+              onNavigate={handleNavigate}
+            />
           )}
-          {view === 'tree' && (
-            <FamilyTree members={members} />
-          )}
-          {view === 'list' && (
-            <MemberList members={members} canEdit={canEdit} />
-          )}
+          {view === 'tree' && <FamilyTree members={members} />}
+          {view === 'list' && <MemberList members={members} canEdit={canEdit} />}
           {view === 'add' && canEdit && (
             <AddMemberForm members={members} onSuccess={() => handleNavigate('list')} />
           )}
-          {view === 'birthdays' && (
-            <BirthdayCalendar members={members} />
-          )}
-          {view === 'locations' && (
-            <LocationMap members={members} />
-          )}
+          {view === 'birthdays' && <BirthdayCalendar members={members} />}
+          {view === 'locations' && <LocationMap members={members} />}
           {view === 'settings' && canEdit && (
             <Settings user={user} userRole={userRole} members={members} />
           )}
-        </div>
+        </main>
       </div>
+
+      {/*
+        Mobile bottom tab bar. Deliberately NOT an icon-only hover-expand rail:
+        hover does not exist on touch, and this is a family app used mostly on
+        phones. Labels stay visible; targets are 64px tall.
+      */}
+      <nav className="tabbar" aria-label="Main">
+        {tabItems.map((item) => (
+          <button
+            key={item.id}
+            className={view === item.id ? 'tabbar__item is-active' : 'tabbar__item'}
+            onClick={() => handleNavigate(item.id)}
+            aria-current={view === item.id ? 'page' : undefined}
+          >
+            <Icon name={item.icon} size={22} />
+            <span className="tabbar__label">{item.label.replace('Family ', '')}</span>
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }

@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { getNextBirthdayDate, parseBirthDate } from '../utils/birthdays';
+import { Avatar, Badge, Card, Icon, Stat, Skeleton } from './ui';
 import './HomeDashboard.css';
 
 const FALLBACK_GENERATIONS = {
@@ -113,7 +114,17 @@ const getGenerationCount = (members) => {
   return new Set(generationById.values()).size;
 };
 
-function HomeDashboard({ members, user, onNavigate }) {
+/* Earliest birth year in the tree — anchors the hero's "1947 -> Today" range
+   in real data instead of a hardcoded string. */
+const getFoundingYear = (members) => {
+  const years = members
+    .map((member) => parseBirthDate(member.birthDate))
+    .filter(Boolean)
+    .map((date) => date.getFullYear());
+  return years.length > 0 ? Math.min(...years) : null;
+};
+
+function HomeDashboard({ members, user, isLoading = false, onNavigate }) {
   const [stats, setStats] = useState({
     totalMembers: 0,
     upcomingBirthdays: 0,
@@ -181,58 +192,89 @@ function HomeDashboard({ members, user, onNavigate }) {
     setUpcomingBirthdays(upcoming);
   };
 
-  const getTimeOfDay = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
-  };
-
   const handleNavigate = (view) => {
     if (onNavigate) {
       onNavigate(view);
     }
   };
 
+  /* Collage backdrop built from photos that already exist in Firestore — no
+     new schema, no upload flow. Needs at least 4 to read as a collage rather
+     than as a mistake; below that the hero falls back to a warm gradient. */
+  const collage = useMemo(
+    () => members.filter((m) => m.photoURL).slice(0, 12),
+    [members]
+  );
+  const hasCollage = collage.length >= 4;
+  const foundingYear = useMemo(() => getFoundingYear(members), [members]);
+
   return (
     <div className="home-dashboard">
-      <div className="welcome-header">
-        <h1>{getTimeOfDay()}!</h1>
-        <p className="welcome-subtitle">Welcome to The Medina Family Tree</p>
-      </div>
+      {/*
+        HERO. Replaces "Good afternoon!" — a greeting says nothing about this
+        family. The name, the span of years, and the faces do.
+      */}
+      <section className={`hero ${hasCollage ? 'hero--collage' : 'hero--plain'}`}>
+        {hasCollage && (
+          <div className="hero__collage" aria-hidden="true">
+            {collage.map((member) => (
+              <img key={member.id} src={member.photoURL} alt="" loading="lazy" decoding="async" />
+            ))}
+          </div>
+        )}
+
+        <div className="hero__content">
+          <p className="hero__eyebrow t-label">
+            {foundingYear ? `${foundingYear} — Today` : 'Est. 1947'}
+          </p>
+          <h1 className="t-display hero__title">The Medina Family</h1>
+
+          <div className="hero__facts">
+            <span className="hero__fact">
+              <strong className="t-tabular">{stats.generations}</strong> Generations
+            </span>
+            <span className="hero__sep" aria-hidden="true" />
+            <span className="hero__fact">
+              <strong className="t-tabular">{stats.totalMembers}</strong> Members
+            </span>
+            <span className="hero__sep" aria-hidden="true" />
+            <span className="hero__fact">
+              <strong className="t-tabular">{stats.locations}</strong> Places
+            </span>
+          </div>
+
+          <p className="hero__quote">Our family&rsquo;s story continues.</p>
+        </div>
+      </section>
 
       <div className="dashboard-stats">
-        <div className="dash-stat-card">
-          <div className="dash-stat-icon">Members</div>
-          <div className="dash-stat-content">
-            <div className="dash-stat-number">{stats.totalMembers}</div>
-            <div className="dash-stat-label">Family Members</div>
-          </div>
-        </div>
-
-        <div className="dash-stat-card">
-          <div className="dash-stat-icon">Birthdays</div>
-          <div className="dash-stat-content">
-            <div className="dash-stat-number">{stats.upcomingBirthdays}</div>
-            <div className="dash-stat-label">Upcoming Birthdays</div>
-          </div>
-        </div>
-
-        <div className="dash-stat-card">
-          <div className="dash-stat-icon">Tree</div>
-          <div className="dash-stat-content">
-            <div className="dash-stat-number">{stats.generations}</div>
-            <div className="dash-stat-label">Generations</div>
-          </div>
-        </div>
-
-        <div className="dash-stat-card">
-          <div className="dash-stat-icon">Locations</div>
-          <div className="dash-stat-content">
-            <div className="dash-stat-number">{stats.locations}</div>
-            <div className="dash-stat-label">Locations</div>
-          </div>
-        </div>
+        {isLoading ? (
+          <>
+            <Skeleton variant="card" />
+            <Skeleton variant="card" />
+            <Skeleton variant="card" />
+            <Skeleton variant="card" />
+          </>
+        ) : (
+          <>
+            <Card surface="1" pad="md" className="dash-stat-card">
+              <Icon name="users" size={20} className="dash-stat-icon" />
+              <Stat value={stats.totalMembers} label="Family Members" />
+            </Card>
+            <Card surface="1" pad="md" className="dash-stat-card">
+              <Icon name="cake" size={20} className="dash-stat-icon" />
+              <Stat value={stats.upcomingBirthdays} label="Upcoming Birthdays" />
+            </Card>
+            <Card surface="1" pad="md" className="dash-stat-card">
+              <Icon name="tree" size={20} className="dash-stat-icon" />
+              <Stat value={stats.generations} label="Generations" />
+            </Card>
+            <Card surface="1" pad="md" className="dash-stat-card">
+              <Icon name="pin" size={20} className="dash-stat-icon" />
+              <Stat value={stats.locations} label="Locations" />
+            </Card>
+          </>
+        )}
       </div>
 
       <div className="dashboard-grid">
@@ -245,24 +287,18 @@ function HomeDashboard({ members, user, onNavigate }) {
             <div className="widget-content">
               {upcomingBirthdays.map((member) => (
                 <div key={member.id} className="widget-item">
-                  <div className="widget-item-avatar">
-                    {member.photoURL ? (
-                      <img src={member.photoURL} alt={member.name} />
-                    ) : (
-                      member.name?.charAt(0).toUpperCase()
-                    )}
-                  </div>
+                  <Avatar member={member} size="md" ring />
                   <div className="widget-item-info">
-                    <div className="widget-item-name">{member.name}</div>
+                    <div className="widget-item-name t-truncate">{member.name}</div>
                     <div className="widget-item-detail">
                       {formatShortDate(member.birthDate)}
                     </div>
                   </div>
-                  <div className={`widget-item-badge ${member.daysUntil === 0 ? 'today' : ''}`}>
+                  <Badge tone={member.daysUntil === 0 ? 'solid' : 'gold'}>
                     {member.daysUntil === 0 ? 'Today' :
                       member.daysUntil === 1 ? 'Tomorrow' :
                         `${member.daysUntil} days`}
-                  </div>
+                  </Badge>
                 </div>
               ))}
             </div>
@@ -278,18 +314,12 @@ function HomeDashboard({ members, user, onNavigate }) {
             <div className="widget-content">
               {recentlyAdded.map((member) => (
                 <div key={member.id} className="widget-item">
-                  <div className="widget-item-avatar">
-                    {member.photoURL ? (
-                      <img src={member.photoURL} alt={member.name} />
-                    ) : (
-                      member.name?.charAt(0).toUpperCase()
-                    )}
-                  </div>
+                  <Avatar member={member} size="md" ring />
                   <div className="widget-item-info">
-                    <div className="widget-item-name">{member.name}</div>
+                    <div className="widget-item-name t-truncate">{member.name}</div>
                     <div className="widget-item-detail">{member.relationship}</div>
                   </div>
-                  <div className="widget-item-badge new">New</div>
+                  <Badge tone="success">New</Badge>
                 </div>
               ))}
             </div>
@@ -302,20 +332,22 @@ function HomeDashboard({ members, user, onNavigate }) {
           </div>
           <div className="widget-content">
             <div className="action-grid">
+              {/* Icon slots previously held the literal words "Tree",
+                  "Birthdays", "Map", "Members". */}
               <button className="action-button" onClick={() => handleNavigate('tree')}>
-                <span className="action-icon">Tree</span>
+                <Icon name="tree" size={22} className="action-icon" />
                 <span className="action-label">View Tree</span>
               </button>
               <button className="action-button" onClick={() => handleNavigate('birthdays')}>
-                <span className="action-icon">Birthdays</span>
+                <Icon name="cake" size={22} className="action-icon" />
                 <span className="action-label">Birthdays</span>
               </button>
               <button className="action-button" onClick={() => handleNavigate('locations')}>
-                <span className="action-icon">Map</span>
+                <Icon name="pin" size={22} className="action-icon" />
                 <span className="action-label">Locations</span>
               </button>
               <button className="action-button" onClick={() => handleNavigate('list')}>
-                <span className="action-icon">Members</span>
+                <Icon name="users" size={22} className="action-icon" />
                 <span className="action-label">Members</span>
               </button>
             </div>

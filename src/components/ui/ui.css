@@ -1,0 +1,384 @@
+/* ==========================================================================
+   LAYER 1 — PRIMITIVES
+   Every value here is a token. No raw hex, px radius, or duration.
+   ========================================================================== */
+
+/* ------------------------------------------------------------------- AVATAR */
+.avatar {
+  position: relative;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: var(--r-full);
+  background-color: var(--surface-3);
+  background-size: cover;
+  color: var(--ink-50);
+  font-weight: 600;
+  line-height: 1;
+  user-select: none;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Faces sit high in a portrait; centre-cropping decapitates them. */
+  object-position: center 22%;
+}
+
+.avatar__initials {
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+  /* Monogram scales with the avatar, so one rule covers all five sizes. */
+  font-size: 0.38em;
+  color: var(--on-gold);
+  mix-blend-mode: luminosity;
+  opacity: 0.92;
+}
+
+.avatar--xs { width: var(--avatar-xs); height: var(--avatar-xs); font-size: var(--avatar-xs); }
+.avatar--sm { width: var(--avatar-sm); height: var(--avatar-sm); font-size: var(--avatar-sm); }
+.avatar--md { width: var(--avatar-md); height: var(--avatar-md); font-size: var(--avatar-md); }
+.avatar--lg { width: var(--avatar-lg); height: var(--avatar-lg); font-size: var(--avatar-lg); }
+.avatar--xl { width: var(--avatar-xl); height: var(--avatar-xl); font-size: var(--avatar-xl); }
+
+/* Double ring: inner gap in the page colour, outer hairline. Unifies photo
+   avatars with monogram ones, which previously looked unrelated. */
+.avatar--ring {
+  box-shadow: 0 0 0 2px var(--surface-1), 0 0 0 3px var(--hairline-strong);
+}
+
+/* Memorial portraits read as archival rather than greyed-out/disabled. */
+.avatar--memorial {
+  filter: saturate(0.55) contrast(1.04);
+}
+
+.avatar--memorial::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, transparent 40%, rgba(198, 162, 107, 0.14));
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------------- CARD */
+.card {
+  position: relative;
+  border-radius: var(--r-md);
+  /* Hairline via inset shadow, not `border`, so it never affects box size or
+     shift layout on hover. */
+  transition: box-shadow var(--dur-base) var(--ease-out),
+              background-color var(--dur-base) var(--ease-out),
+              transform var(--dur-base) var(--ease-out);
+}
+
+.card--s1 { background: var(--surface-1); }
+.card--s2 { background: var(--surface-2); }
+.card--s3 { background: var(--surface-3); }
+
+.card--e0 { box-shadow: inset 0 0 0 1px var(--hairline); }
+.card--e1 { box-shadow: var(--elev-1), inset 0 0 0 1px var(--hairline); }
+.card--e2 { box-shadow: var(--elev-2), inset 0 0 0 1px var(--hairline); }
+.card--e3 { box-shadow: var(--elev-3), inset 0 0 0 1px var(--hairline); }
+
+/* THE NESTING ESCAPE HATCH.
+   A group that needs spacing but must not add another visible box. Replaces
+   the `.content-body` wrapper that made every screen 3 boxes deep. */
+.card--flush {
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.card--pad-none { padding: 0; }
+.card--pad-sm   { padding: var(--space-4); }
+.card--pad-md   { padding: var(--space-5); }
+.card--pad-lg   { padding: var(--space-6); }
+
+.card--interactive {
+  cursor: pointer;
+  /* Contain paint so a hovering card's shadow doesn't repaint siblings. */
+  will-change: box-shadow;
+}
+
+/* Lift on hover is scale, not translateY(-4px). Translate slides a card out
+   from under the cursor and reads as 2015; a sub-percent scale plus a
+   stronger shadow reads as depth. */
+.card--interactive:hover {
+  background: var(--surface-2);
+  box-shadow: var(--elev-3), inset 0 0 0 1px var(--hairline-strong);
+  transform: scale(1.008);
+}
+
+.card--interactive:active {
+  transform: scale(0.997);
+  box-shadow: var(--elev-1), inset 0 0 0 1px var(--hairline-strong);
+  transition-duration: var(--dur-fast);
+}
+
+.card.is-selected {
+  background: var(--gold-tint-8);
+  box-shadow: var(--elev-2), inset 0 0 0 1px var(--hairline-gold);
+}
+
+/* --------------------------------------------------------------------- STAT */
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.stat--start  { align-items: flex-start; text-align: left; }
+.stat--center { align-items: center; text-align: center; }
+
+.stat__value {
+  font-size: clamp(1.75rem, 1.2rem + 1.8vw, 2.5rem); /* 28 -> 40, was a flat 48 */
+}
+
+.stat--lg .stat__value { font-size: clamp(2.25rem, 1.4rem + 3vw, 3.5rem); }
+.stat--sm .stat__value { font-size: 1.5rem; }
+
+.stat__value--gold    { color: var(--gold-400); }
+.stat__value--ink     { color: var(--ink-50); }
+.stat__value--success { color: var(--success); }
+
+.stat__label { color: var(--ink-500); }
+
+.stat__delta {
+  font-size: var(--t-sm);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat__delta--success { color: var(--success); }
+.stat__delta--warning { color: var(--warning); }
+.stat__delta--neutral { color: var(--ink-500); }
+
+/* -------------------------------------------------------------------- BADGE */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--r-full);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--r-full);
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.badge--neutral { background: var(--surface-3); color: var(--ink-300); }
+.badge--gold    { background: var(--gold-tint-16); color: var(--gold-400);
+                  box-shadow: inset 0 0 0 1px var(--hairline-gold); }
+/* Dark ink on the gold fill — 7.78:1, vs 2.78:1 for the old white. */
+.badge--solid   { background: var(--gold-500); color: var(--on-gold); }
+.badge--success { background: var(--success-tint); color: var(--success); }
+.badge--warning { background: var(--warning-tint); color: var(--warning); }
+.badge--danger  { background: var(--danger-tint);  color: var(--danger); }
+
+/* ------------------------------------------------------------------- BUTTON */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: none;
+  border-radius: var(--r-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background-color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
+}
+
+.btn:active:not(:disabled) { transform: scale(0.98); }
+
+.btn:disabled,
+.btn.is-loading {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn--sm { padding: var(--space-2) var(--space-3); font-size: var(--t-sm); min-height: 32px; }
+.btn--md { padding: var(--space-3) var(--space-4); font-size: var(--t-base); min-height: 40px; }
+/* 48px floor on lg — comfortable touch target for the primary action. */
+.btn--lg { padding: var(--space-3) var(--space-5); font-size: var(--t-lg); min-height: 48px; }
+
+.btn--icon { padding: 0; aspect-ratio: 1; }
+.btn--icon.btn--sm { width: 32px; }
+.btn--icon.btn--md { width: 40px; }
+.btn--icon.btn--lg { width: 48px; }
+
+.btn--full { width: 100%; }
+
+.btn--primary {
+  background: var(--gold-500);
+  color: var(--on-gold);
+  box-shadow: var(--elev-1);
+}
+.btn--primary:hover:not(:disabled) { background: var(--gold-400); box-shadow: var(--elev-2); }
+.btn--primary:active:not(:disabled) { background: var(--gold-600); }
+
+.btn--secondary {
+  background: var(--surface-3);
+  color: var(--ink-200);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+.btn--secondary:hover:not(:disabled) {
+  background: var(--surface-4);
+  color: var(--ink-50);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+}
+
+.btn--ghost { background: transparent; color: var(--ink-500); }
+.btn--ghost:hover:not(:disabled) { background: var(--surface-2); color: var(--ink-50); }
+
+.btn--danger {
+  background: var(--danger-tint);
+  color: var(--danger);
+  box-shadow: inset 0 0 0 1px var(--danger-edge);
+}
+.btn--danger:hover:not(:disabled) { background: var(--danger); color: var(--bg); }
+
+.btn__spinner {
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: var(--r-full);
+  animation: spin 640ms linear infinite;
+}
+
+/* ------------------------------------------------------- SEGMENTED CONTROL */
+.segmented {
+  position: relative;
+  display: inline-grid;
+  /* Equal columns keep the sliding thumb's geometry trivial. */
+  grid-template-columns: repeat(var(--seg-count), 1fr);
+  gap: 0;
+  padding: var(--space-1);
+  background: var(--surface-2);
+  border-radius: var(--r-sm);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+.segmented__thumb {
+  position: absolute;
+  top: var(--space-1);
+  bottom: var(--space-1);
+  left: var(--space-1);
+  width: calc((100% - var(--space-2)) / var(--seg-count));
+  background: var(--gold-500);
+  border-radius: calc(var(--r-sm) - 2px);
+  box-shadow: var(--elev-1);
+  transform: translate3d(calc(var(--seg-index) * 100%), 0, 0);
+  transition: transform var(--dur-base) var(--ease-spring);
+}
+
+.segmented__option {
+  position: relative;
+  z-index: 1;
+  padding: var(--space-2) var(--space-4);
+  background: none;
+  border: none;
+  border-radius: calc(var(--r-sm) - 2px);
+  color: var(--ink-500);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  transition: color var(--dur-base) var(--ease-out);
+}
+
+.segmented__option:hover:not(.is-active) { color: var(--ink-200); }
+.segmented__option.is-active { color: var(--on-gold); }
+
+.segmented--lg .segmented__option { padding: var(--space-3) var(--space-5); font-size: var(--t-base); }
+
+/* ----------------------------------------------------------------- SKELETON */
+.skeleton {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-2);
+  border-radius: var(--r-sm);
+}
+
+/* Travelling highlight rather than a pulsing opacity — reads as loading, not
+   as a broken element. */
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(245, 241, 234, 0.06), transparent);
+  transform: translateX(-100%);
+  animation: shimmer 1400ms var(--ease-in-out) infinite;
+}
+
+@keyframes shimmer {
+  to { transform: translateX(100%); }
+}
+
+.skeleton--text   { height: 0.75rem; width: 100%; }
+.skeleton--title  { height: 1.125rem; width: 55%; border-radius: var(--r-sm); }
+.skeleton--avatar { width: var(--avatar-lg); height: var(--avatar-lg); border-radius: var(--r-full); }
+.skeleton--thumb  { width: 100%; aspect-ratio: 4 / 3; border-radius: var(--r-md); }
+.skeleton--card   { width: 100%; height: 120px; border-radius: var(--r-md); }
+
+.skeleton-group { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.skeleton-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--surface-1);
+  border-radius: var(--r-md);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+.skeleton-card__body { flex: 1; display: flex; flex-direction: column; gap: var(--space-3); }
+
+/* -------------------------------------------------------------- PRIMITIVES
+   Layout helpers used by the composition layer. */
+.stack   { display: flex; flex-direction: column; }
+.row     { display: flex; align-items: center; }
+.spacer  { flex: 1; }
+
+.gap-1 { gap: var(--space-1); } .gap-2 { gap: var(--space-2); }
+.gap-3 { gap: var(--space-3); } .gap-4 { gap: var(--space-4); }
+.gap-5 { gap: var(--space-5); } .gap-6 { gap: var(--space-6); }
+.gap-7 { gap: var(--space-7); }
+
+/* Auto-fitting card grid. `auto-fill` + minmax means no breakpoint math. */
+.auto-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--col-min, 260px), 1fr));
+  gap: var(--space-5);
+}
+
+/* Staggered entrance for grid children. Capped at 8 so a 54-member list
+   doesn't take two seconds to finish appearing. */
+.animate-in > * {
+  animation: rise-in var(--dur-slow) var(--ease-out) backwards;
+}
+.animate-in > *:nth-child(1) { animation-delay: 0ms; }
+.animate-in > *:nth-child(2) { animation-delay: 30ms; }
+.animate-in > *:nth-child(3) { animation-delay: 60ms; }
+.animate-in > *:nth-child(4) { animation-delay: 90ms; }
+.animate-in > *:nth-child(5) { animation-delay: 120ms; }
+.animate-in > *:nth-child(6) { animation-delay: 150ms; }
+.animate-in > *:nth-child(7) { animation-delay: 180ms; }
+.animate-in > *:nth-child(n + 8) { animation-delay: 210ms; }

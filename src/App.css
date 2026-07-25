@@ -1,51 +1,100 @@
-* {
+/* ==========================================================================
+   APP SHELL
+   Foundation imports MUST come first — every other stylesheet depends on
+   these custom properties existing.
+   ========================================================================== */
+@import './styles/tokens.css';
+@import './styles/typography.css';
+@import './components/ui/ui.css';
+
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #000000;
-  color: #F5F5F7;
-  line-height: 1.6;
+html {
+  /* Anchor/scroll targets clear the sticky toolbar. */
+  scroll-padding-top: var(--space-7);
+  /* Keeps the warm field behind overscroll on iOS instead of white. */
+  background: var(--bg);
 }
 
+body {
+  min-height: 100dvh;
+  /* Stops horizontal jitter when a wide tree/table overflows its container. */
+  overflow-x: hidden;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Consistent, unobtrusive scrollbars. Replaces the always-visible 8px gray
+   bar that the birthday month-selector was drawing. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-4) transparent;
+}
+
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: var(--surface-4);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: var(--r-full);
+}
+*::-webkit-scrollbar-thumb:hover { background: var(--gold-700); background-clip: padding-box; }
+
+/* Horizontal scrollers fade at the edges instead of showing a scrollbar —
+   signals "more content" without drawing chrome. */
+.scroll-x {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  mask-image: linear-gradient(90deg, transparent, #000 var(--space-5),
+              #000 calc(100% - var(--space-5)), transparent);
+}
+.scroll-x::-webkit-scrollbar { display: none; }
+
+/* ------------------------------------------------------------------ LOADING */
 .loading-screen {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
-  background: #000000;
-  color: #F5F5F7;
+  gap: var(--space-5);
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--ink-500);
 }
 
 .loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #2C2C2E;
-  border-top: 4px solid #B8956A;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 20px;
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--hairline);
+  border-top-color: var(--gold-500);
+  border-radius: var(--r-full);
+  animation: spin 720ms linear infinite;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
 }
 
-h1, h2, h3 {
-  font-family: 'Playfair Display', serif;
-  font-weight: 600;
+/* Shared entrance — used by cards, hero, and tree nodes. */
+@keyframes rise-in {
+  from { opacity: 0; transform: translate3d(0, 12px, 0); }
+  to   { opacity: 1; transform: none; }
 }
 
-button {
-  cursor: pointer;
-  font-family: 'Inter', sans-serif;
-}
-
-input, textarea, select {
-  font-family: 'Inter', sans-serif;
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
