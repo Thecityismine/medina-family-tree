@@ -1,5 +1,4 @@
 import React from 'react';
-import { calculateAge } from '../utils/birthdays';
 import { CARD_WIDTH, CARD_HEIGHT } from '../utils/familyTreeLayout';
 
 const NODE_WIDTH = 156;
@@ -18,7 +17,6 @@ function FamilyTreeCanvasNode({
   onHoverStart,
   onHoverEnd
 }) {
-  const age = calculateAge(member.birthDate);
   const isYou = ['You (Admin)', 'You', 'Self'].includes(member.relationship);
   const left = x + (CARD_WIDTH - NODE_WIDTH) / 2;
   const top = y + (CARD_HEIGHT - NODE_HEIGHT) / 2;
@@ -54,7 +52,6 @@ function FamilyTreeCanvasNode({
 
       <div className="ftc-node-name">{member.name}</div>
       <div className="ftc-node-relation">{member.relationship || 'Family Member'}</div>
-      {age !== null && <div className="ftc-node-age">Age {age}</div>}
 
       {childCount > 0 && (
         <button
