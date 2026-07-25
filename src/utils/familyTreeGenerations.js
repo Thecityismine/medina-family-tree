@@ -144,3 +144,32 @@ export function computeGenerations(members) {
 
   return { generationById: normalizedGenerations, selfMember };
 }
+
+const GENERATION_TITLES = {
+  1: 'Parents & In-Laws',
+  2: 'Your Generation',
+  3: 'Children',
+  4: 'Grandchildren'
+};
+
+/**
+ * Human-readable label for a generation level, relative to "you" when
+ * known (so it reads "Grandparents" / "Children" etc. from your point of
+ * view), falling back to absolute labels otherwise. Shared by the List
+ * view and Canvas view so row labels always agree.
+ */
+export function getGenerationTitle(level, selfGeneration) {
+  if (selfGeneration === null || selfGeneration === undefined) {
+    return GENERATION_TITLES[level] || `Generation ${level}`;
+  }
+
+  const offset = level - selfGeneration;
+  if (offset === 0) return 'Your Generation';
+  if (offset === -1) return 'Parents & In-Laws';
+  if (offset === -2) return 'Grandparents';
+  if (offset === -3) return 'Great-Grandparents';
+  if (offset === 1) return 'Children';
+  if (offset === 2) return 'Grandchildren';
+  if (offset === 3) return 'Great-Grandchildren';
+  return `Generation ${level}`;
+}

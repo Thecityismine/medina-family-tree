@@ -1,4 +1,4 @@
-import { computeGenerations } from './familyTreeGenerations';
+import { computeGenerations, getGenerationTitle } from './familyTreeGenerations';
 
 export const CARD_WIDTH = 180;
 export const CARD_HEIGHT = 140;
@@ -6,34 +6,60 @@ export const CARD_HEIGHT = 140;
 const H_GAP = 40;
 const V_GAP = 70;
 const COLUMN_GAP = 110;
-const CANVAS_PADDING = 80;
+const PADDING_TOP_RIGHT_BOTTOM = 80;
+const PADDING_LEFT = 190; // extra room for the generation row labels
 
 const CELL_WIDTH = CARD_WIDTH + H_GAP;
 const ROW_HEIGHT = CARD_HEIGHT + V_GAP;
 
 const BRANCHES = ['medina', 'anseli', 'shared'];
 
-const branchOf = (member) => (BRANCHES.includes(member.branch) ? member.branch : null);
-
 const emptyLayout = (members, message) => ({
   ready: false,
   message,
   blocksByBranch: { medina: { nodes: [], connectors: [] }, anseli: { nodes: [], connectors: [] }, shared: { nodes: [], connectors: [] } },
   canvasSize: { width: 0, height: 0 },
+  rows: [],
   unplaced: members
 });
 
+function buildChildrenMap(members) {
+  const map = new Map();
+  members.forEach((member) => {
+    (member.parentIds || []).forEach((parentId) => {
+      if (!map.has(parentId)) map.set(parentId, []);
+      map.get(parentId).push(member.id);
+    });
+  });
+  return map;
+}
+
+function collectDescendants(startId, childrenMap) {
+  const result = new Set();
+  const queue = [startId];
+  while (queue.length > 0) {
+    const current = queue.shift();
+    (childrenMap.get(current) || []).forEach((childId) => {
+      if (!result.has(childId)) {
+        result.add(childId);
+        queue.push(childId);
+      }
+    });
+  }
+  return result;
+}
+
 /**
  * Orders one branch's members within each generation row (spouses kept
- * adjacent, otherwise sorted near their parents' slot from the row above so
- * children roughly line up under parents), and returns the slot index each
- * member landed on plus how many slots each row needed.
+ * adjacent, siblings kept together, otherwise sorted near their parents'
+ * slot from the row above so children roughly line up under parents), and
+ * returns the slot index each member landed on plus how many slots each
+ * row needed.
  */
-function assignSlots(members, generationById, targetBranch) {
+function assignSlots(includedMembers, generationById, effectiveBranch, targetBranch) {
   const byLevel = new Map();
-  members.forEach((member) => {
-    if (branchOf(member) !== targetBranch) return;
-    if (!generationById.has(member.id)) return;
+  includedMembers.forEach((member) => {
+    if (effectiveBranch.get(member.id) !== targetBranch) return;
     const level = generationById.get(member.id);
     if (!byLevel.has(level)) byLevel.set(level, []);
     byLevel.get(level).push(member);
@@ -53,6 +79,7 @@ function assignSlots(members, generationById, targetBranch) {
       if (parentSlots.length) return parentSlots.reduce((a, b) => a + b, 0) / parentSlots.length;
       return null;
     };
+    const siblingKey = (member) => (member.parentIds || []).slice().sort().join('|');
 
     const sorted = [...rowMembers].sort((a, b) => {
       const ka = sortKey(a);
@@ -60,7 +87,11 @@ function assignSlots(members, generationById, targetBranch) {
       if (ka === null && kb === null) return (a.name || '').localeCompare(b.name || '');
       if (ka === null) return 1;
       if (kb === null) return -1;
-      return ka - kb;
+      if (ka !== kb) return ka - kb;
+      const sa = siblingKey(a);
+      const sb = siblingKey(b);
+      if (sa !== sb) return sa.localeCompare(sb);
+      return (a.name || '').localeCompare(b.name || '');
     });
 
     const placed = new Set();
@@ -90,17 +121,17 @@ function assignSlots(members, generationById, targetBranch) {
 }
 
 /**
- * Builds the hard left/right split canvas layout by placing every tagged
- * member into a generation row (shared logic with the List view) and a
- * left/center/right column by branch. Medina rows are right-aligned to hug
- * the shared column, Anseli rows are left-aligned to hug it from the other
- * side, and the shared column is centered — so all three columns read as
- * one connected tree instead of needing a single-perspective layout engine
- * that can't show aunts/uncles/cousins (see project notes).
+ * Builds the canvas layout: you + your spouse + your direct descendants
+ * always anchor the center column (regardless of their own branch tag —
+ * they're "the trunk", not either side), your tagged blood relatives fan
+ * out left, your spouse's fan out right, both hugging the center column so
+ * the whole thing reads as one connected tree. Generation rows are shared
+ * with the List view's own BFS so both always agree on who's in which row.
  */
-export function buildFamilyTreeCanvasLayout(members) {
-  const { generationById, selfMember } = computeGenerations(members);
+export function buildFamilyTreeCanvasLayout(members, options = {}) {
+  const collapsedIds = options.collapsedIds || new Set();
 
+  const { generationById, selfMember } = computeGenerations(members);
   if (!selfMember) {
     return emptyLayout(
       members,
@@ -108,18 +139,44 @@ export function buildFamilyTreeCanvasLayout(members) {
     );
   }
 
-  const taggedMembers = members.filter((m) => branchOf(m) && generationById.has(m.id));
-  if (taggedMembers.length === 0) {
+  const spouseId = Array.isArray(selfMember.spouseIds) ? selfMember.spouseIds[0] : null;
+  const childrenMap = buildChildrenMap(members);
+
+  const centerIds = new Set([selfMember.id]);
+  if (spouseId) centerIds.add(spouseId);
+  collectDescendants(selfMember.id, childrenMap).forEach((id) => centerIds.add(id));
+  if (spouseId) collectDescendants(spouseId, childrenMap).forEach((id) => centerIds.add(id));
+
+  const effectiveBranch = new Map();
+  members.forEach((member) => {
+    if (!generationById.has(member.id)) return;
+    if (centerIds.has(member.id)) {
+      effectiveBranch.set(member.id, 'shared');
+    } else if (BRANCHES.includes(member.branch)) {
+      effectiveBranch.set(member.id, member.branch);
+    }
+  });
+
+  const hiddenByCollapse = new Set();
+  collapsedIds.forEach((id) => {
+    collectDescendants(id, childrenMap).forEach((descendantId) => hiddenByCollapse.add(descendantId));
+  });
+
+  const includedMembers = members.filter(
+    (m) => effectiveBranch.has(m.id) && !hiddenByCollapse.has(m.id)
+  );
+
+  if (includedMembers.length === 0) {
     return emptyLayout(members, 'Tag family members with a branch in Settings to enable the canvas view.');
   }
 
-  const medina = assignSlots(taggedMembers, generationById, 'medina');
-  const anseli = assignSlots(taggedMembers, generationById, 'anseli');
-  const shared = assignSlots(taggedMembers, generationById, 'shared');
+  const medina = assignSlots(includedMembers, generationById, effectiveBranch, 'medina');
+  const anseli = assignSlots(includedMembers, generationById, effectiveBranch, 'anseli');
+  const shared = assignSlots(includedMembers, generationById, effectiveBranch, 'shared');
 
-  const medinaColumnWidth = Math.max(0, ...Array.from(medina.levelWidths.values(), (n) => n * CELL_WIDTH), 0);
-  const anseliColumnWidth = Math.max(0, ...Array.from(anseli.levelWidths.values(), (n) => n * CELL_WIDTH), 0);
-  const sharedColumnWidth = Math.max(0, ...Array.from(shared.levelWidths.values(), (n) => n * CELL_WIDTH), 0);
+  const medinaColumnWidth = Math.max(0, ...Array.from(medina.levelWidths.values(), (n) => n * CELL_WIDTH));
+  const anseliColumnWidth = Math.max(0, ...Array.from(anseli.levelWidths.values(), (n) => n * CELL_WIDTH));
+  const sharedColumnWidth = Math.max(0, ...Array.from(shared.levelWidths.values(), (n) => n * CELL_WIDTH));
 
   const sharedLeftEdge = -sharedColumnWidth / 2;
   const sharedRightEdge = sharedColumnWidth / 2;
@@ -140,8 +197,8 @@ export function buildFamilyTreeCanvasLayout(members) {
         rowStartX = -rowWidth / 2;
       }
 
-      taggedMembers.forEach((member) => {
-        if (branchOf(member) !== branch) return;
+      includedMembers.forEach((member) => {
+        if (effectiveBranch.get(member.id) !== branch) return;
         if (generationById.get(member.id) !== level) return;
         const slot = result.slotById.get(member.id);
         if (slot === undefined) return;
@@ -158,12 +215,22 @@ export function buildFamilyTreeCanvasLayout(members) {
   placeColumn(shared, 'shared', 'center');
   placeColumn(anseli, 'anseli', 'left');
 
-  const rawNodes = Array.from(positioned.entries()).map(([id, pos]) => ({ id, ...pos }));
+  const directChildCount = new Map();
+  includedMembers.forEach((member) => {
+    directChildCount.set(member.id, (childrenMap.get(member.id) || []).length);
+  });
+
+  const rawNodes = Array.from(positioned.entries()).map(([id, pos]) => ({
+    id,
+    ...pos,
+    childCount: directChildCount.get(id) || 0,
+    isCollapsed: collapsedIds.has(id)
+  }));
 
   const rawConnectors = [];
   const drawnSpousePairs = new Set();
 
-  taggedMembers.forEach((member) => {
+  includedMembers.forEach((member) => {
     const pos = positioned.get(member.id);
     if (!pos) return;
 
@@ -175,14 +242,17 @@ export function buildFamilyTreeCanvasLayout(members) {
         y1: parentPos.y + CARD_HEIGHT,
         x2: pos.x + CARD_WIDTH / 2,
         y2: pos.y,
-        branch: pos.branch
+        branch: pos.branch,
+        type: 'parent-child',
+        fromId: parentId,
+        toId: member.id
       });
     });
 
-    const spouseId = (member.spouseIds || [])[0];
-    if (spouseId) {
-      const pairKey = [member.id, spouseId].sort().join('|');
-      const spousePos = positioned.get(spouseId);
+    const memberSpouseId = (member.spouseIds || [])[0];
+    if (memberSpouseId) {
+      const pairKey = [member.id, memberSpouseId].sort().join('|');
+      const spousePos = positioned.get(memberSpouseId);
       if (spousePos && !drawnSpousePairs.has(pairKey)) {
         drawnSpousePairs.add(pairKey);
         rawConnectors.push({
@@ -190,21 +260,24 @@ export function buildFamilyTreeCanvasLayout(members) {
           y1: pos.y + CARD_HEIGHT / 2,
           x2: spousePos.x,
           y2: spousePos.y + CARD_HEIGHT / 2,
-          branch: pos.branch
+          branch: pos.branch,
+          type: 'spouse',
+          fromId: member.id,
+          toId: memberSpouseId
         });
       }
     }
   });
 
   const placedIds = new Set(positioned.keys());
-  const unplaced = members.filter((m) => !placedIds.has(m.id));
+  const unplaced = members.filter((m) => !placedIds.has(m.id) && !hiddenByCollapse.has(m.id));
 
   const minX = Math.min(...rawNodes.map((n) => n.x), 0);
   const minY = Math.min(...rawNodes.map((n) => n.y), 0);
   const maxX = Math.max(...rawNodes.map((n) => n.x + CARD_WIDTH), CARD_WIDTH);
   const maxY = Math.max(...rawNodes.map((n) => n.y + CARD_HEIGHT), CARD_HEIGHT);
-  const shiftX = CANVAS_PADDING - minX;
-  const shiftY = CANVAS_PADDING - minY;
+  const shiftX = PADDING_LEFT - minX;
+  const shiftY = PADDING_TOP_RIGHT_BOTTOM - minY;
 
   const blocksByBranch = { medina: { nodes: [], connectors: [] }, anseli: { nodes: [], connectors: [] }, shared: { nodes: [], connectors: [] } };
 
@@ -213,6 +286,7 @@ export function buildFamilyTreeCanvasLayout(members) {
   });
   rawConnectors.forEach((c) => {
     blocksByBranch[c.branch].connectors.push({
+      ...c,
       x1: c.x1 + shiftX,
       y1: c.y1 + shiftY,
       x2: c.x2 + shiftX,
@@ -220,14 +294,25 @@ export function buildFamilyTreeCanvasLayout(members) {
     });
   });
 
+  const canvasSize = {
+    width: maxX - minX + PADDING_LEFT + PADDING_TOP_RIGHT_BOTTOM,
+    height: maxY - minY + PADDING_TOP_RIGHT_BOTTOM * 2
+  };
+
+  const selfGeneration = generationById.get(selfMember.id);
+  const levelsPresent = Array.from(new Set(rawNodes.map((n) => generationById.get(n.id)))).sort((a, b) => a - b);
+  const rows = levelsPresent.map((level) => ({
+    level,
+    y: level * ROW_HEIGHT + shiftY,
+    title: getGenerationTitle(level, selfGeneration)
+  }));
+
   return {
     ready: true,
     message: null,
     blocksByBranch,
-    canvasSize: {
-      width: maxX - minX + CANVAS_PADDING * 2,
-      height: maxY - minY + CANVAS_PADDING * 2
-    },
+    canvasSize,
+    rows,
     unplaced
   };
 }

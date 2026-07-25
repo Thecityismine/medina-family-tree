@@ -5,17 +5,36 @@ import { CARD_WIDTH, CARD_HEIGHT } from '../utils/familyTreeLayout';
 const NODE_WIDTH = 156;
 const NODE_HEIGHT = 116;
 
-function FamilyTreeCanvasNode({ member, x, y, branch, onSelect }) {
+function FamilyTreeCanvasNode({
+  member,
+  x,
+  y,
+  branch,
+  childCount,
+  isCollapsed,
+  dimmed,
+  onSelect,
+  onToggleCollapse,
+  onHoverStart,
+  onHoverEnd
+}) {
   const age = calculateAge(member.birthDate);
   const isYou = ['You (Admin)', 'You', 'Self'].includes(member.relationship);
   const left = x + (CARD_WIDTH - NODE_WIDTH) / 2;
   const top = y + (CARD_HEIGHT - NODE_HEIGHT) / 2;
 
+  const handleToggleCollapse = (event) => {
+    event.stopPropagation();
+    onToggleCollapse(member.id);
+  };
+
   return (
     <div
-      className={`ftc-node ftc-node--${branch}${isYou ? ' ftc-node--you' : ''}`}
+      className={`ftc-node ftc-node--${branch}${isYou ? ' ftc-node--you' : ''}${dimmed ? ' ftc-node--dimmed' : ''}`}
       style={{ width: NODE_WIDTH, height: NODE_HEIGHT, transform: `translate(${left}px, ${top}px)` }}
       onClick={() => onSelect(member)}
+      onMouseEnter={() => onHoverStart(member.id)}
+      onMouseLeave={() => onHoverEnd(member.id)}
     >
       {member.passedAwayDate && (
         <span className="ftc-node-dove" title="Passed away">
@@ -36,6 +55,17 @@ function FamilyTreeCanvasNode({ member, x, y, branch, onSelect }) {
       <div className="ftc-node-name">{member.name}</div>
       <div className="ftc-node-relation">{member.relationship || 'Family Member'}</div>
       {age !== null && <div className="ftc-node-age">Age {age}</div>}
+
+      {childCount > 0 && (
+        <button
+          type="button"
+          className={`ftc-node-collapse-toggle${isCollapsed ? ' is-collapsed' : ''}`}
+          onClick={handleToggleCollapse}
+          title={isCollapsed ? `Show ${childCount} ${childCount === 1 ? 'child' : 'children'}` : 'Hide descendants'}
+        >
+          {isCollapsed ? `+${childCount}` : '▾'}
+        </button>
+      )}
     </div>
   );
 }

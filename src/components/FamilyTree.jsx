@@ -1,16 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { calculateAge, parseBirthDate } from '../utils/birthdays';
-import { computeGenerations } from '../utils/familyTreeGenerations';
+import { computeGenerations, getGenerationTitle } from '../utils/familyTreeGenerations';
 import MemberDetailModal from './MemberDetailModal';
 import FamilyTreeCanvas from './FamilyTreeCanvas';
 import './FamilyTree.css';
-
-const GENERATION_TITLES = {
-  1: 'Parents & In-Laws',
-  2: 'Your Generation',
-  3: 'Children',
-  4: 'Grandchildren'
-};
 
 const sortMembers = (a, b) => {
   const dateA = parseBirthDate(a.birthDate);
@@ -65,21 +58,7 @@ function FamilyTree({ members }) {
 
     const generationLevels = Array.from(generationMap.keys()).sort((a, b) => a - b);
     const sorter = createMemberSorter(selfMember);
-    const resolveTitle = (level) => {
-      if (!selfMember || selfGeneration === null) {
-        return GENERATION_TITLES[level] || `Generation ${level}`;
-      }
-
-      const offset = level - selfGeneration;
-      if (offset === 0) return 'Your Generation';
-      if (offset === -1) return 'Parents & In-Laws';
-      if (offset === -2) return 'Grandparents';
-      if (offset === -3) return 'Great-Grandparents';
-      if (offset === 1) return 'Children';
-      if (offset === 2) return 'Grandchildren';
-      if (offset === 3) return 'Great-Grandchildren';
-      return `Generation ${level}`;
-    };
+    const resolveTitle = (level) => getGenerationTitle(level, selfMember ? selfGeneration : null);
 
     const generations = generationLevels.map((level) => ({
       level,

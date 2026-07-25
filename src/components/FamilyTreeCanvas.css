@@ -39,24 +39,65 @@
   overflow: visible;
 }
 
-.ftc-connectors line {
+.ftc-connector-line {
   stroke-width: 2;
   fill: none;
+  transition: opacity 0.2s;
 }
 
-.ftc-connectors--medina line {
+.ftc-connectors--medina .ftc-connector-line--parent-child {
   stroke: #B8956A;
   opacity: 0.6;
 }
 
-.ftc-connectors--anseli line {
+.ftc-connectors--anseli .ftc-connector-line--parent-child {
   stroke: #4A5D4F;
   opacity: 0.75;
 }
 
-.ftc-connectors--shared line {
+.ftc-connectors--shared .ftc-connector-line--parent-child {
   stroke: #B8956A;
   opacity: 0.9;
+}
+
+.ftc-connector-line--spouse {
+  stroke: #D66C86;
+  stroke-width: 3.5;
+  opacity: 0.85;
+}
+
+.ftc-connector-line--dimmed {
+  opacity: 0.08 !important;
+}
+
+/* Generation row markers */
+.ftc-row-marker {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ftc-row-label {
+  flex-shrink: 0;
+  width: 170px;
+  padding-left: 20px;
+  color: #6E6E73;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.ftc-row-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+  margin-right: 20px;
 }
 
 /* Person card */
@@ -70,9 +111,8 @@
   padding: 12px;
   text-align: center;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, opacity 0.2s;
   box-sizing: border-box;
-  overflow: hidden;
 }
 
 .ftc-node:hover {
@@ -104,6 +144,49 @@
 
 .ftc-node--you {
   border-width: 3px;
+}
+
+.ftc-node--dimmed {
+  opacity: 0.18;
+}
+
+.ftc-node--dimmed:hover {
+  opacity: 0.5;
+}
+
+.ftc-node-collapse-toggle {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 11px;
+  background: #2C2C2E;
+  border: 1px solid #3A3A3C;
+  color: #F5F5F7;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  z-index: 6;
+}
+
+.ftc-node-collapse-toggle:hover {
+  background: #B8956A;
+  border-color: #B8956A;
+  color: white;
+}
+
+.ftc-node-collapse-toggle.is-collapsed {
+  background: #B8956A;
+  border-color: #B8956A;
+  color: white;
 }
 
 .ftc-node-dove {
@@ -242,6 +325,71 @@
 
 .ftc-legend-swatch--shared {
   background: linear-gradient(135deg, #B8956A 0%, #4A5D4F 100%);
+}
+
+.ftc-legend-line {
+  width: 24px;
+  height: 3px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.ftc-legend-line--spouse {
+  background: #D66C86;
+  height: 3.5px;
+}
+
+.ftc-legend-line--parent {
+  background: #B8956A;
+  opacity: 0.7;
+}
+
+/* Minimap */
+.ftc-minimap {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 15;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid #2C2C2E;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+.ftc-minimap-inner {
+  cursor: pointer;
+}
+
+.ftc-minimap-canvas {
+  position: relative;
+  background: #0a0a0a;
+}
+
+.ftc-minimap-dot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  transform: translate(-50%, -50%);
+}
+
+.ftc-minimap-dot--medina {
+  background: #B8956A;
+}
+
+.ftc-minimap-dot--anseli {
+  background: #4A5D4F;
+}
+
+.ftc-minimap-dot--shared {
+  background: #F5F5F7;
+}
+
+@media (max-width: 768px) {
+  .ftc-minimap {
+    display: none;
+  }
 }
 
 /* Unplaced relatives */
