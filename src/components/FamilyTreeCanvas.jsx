@@ -79,7 +79,8 @@ function FamilyTreeCanvas({ members, onSelectMember }) {
         maxScale={2.5}
         initialScale={0.55}
         centerOnInit
-        wheel={{ step: 0.15 }}
+        smooth={false}
+        wheel={{ step: 0.05 }}
         doubleClick={{ mode: 'zoomIn' }}
       >
         {({ zoomIn, zoomOut, resetTransform }) => (
@@ -87,7 +88,16 @@ function FamilyTreeCanvas({ members, onSelectMember }) {
             <div className="ftc-toolbar">
               <button type="button" onClick={() => zoomIn()} aria-label="Zoom in">+</button>
               <button type="button" onClick={() => zoomOut()} aria-label="Zoom out">−</button>
-              <button type="button" onClick={() => resetTransform()} aria-label="Reset view">Reset</button>
+              <button
+                type="button"
+                onClick={() => {
+                  resetTransform();
+                  setCollapsedIds(new Set());
+                }}
+                aria-label="Reset view"
+              >
+                Reset
+              </button>
             </div>
 
             <TransformComponent
