@@ -64,3 +64,10 @@ coverage/
 *.old
 
 .vercel
+
+# Local snapshot copies of the app — kept on disk, never in history (~2.4MB)
+00. Backup Files/
+medina-family-firebase-v2/
+medina-family-firebase-v3/
+medina-family-firebase-v4/
+Family tree.JPG
