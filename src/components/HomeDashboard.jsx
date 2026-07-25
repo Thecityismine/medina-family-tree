@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { getNextBirthdayDate, parseBirthDate } from '../utils/birthdays';
 import { Avatar, Badge, Card, Icon, Stat, Skeleton } from './ui';
+import { getOnThisDay, getFamilyMilestones } from '../utils/timeline';
 import './HomeDashboard.css';
 
 const FALLBACK_GENERATIONS = {
@@ -208,6 +209,9 @@ function HomeDashboard({ members, user, isLoading = false, onNavigate }) {
   const hasCollage = collage.length >= 4;
   const foundingYear = useMemo(() => getFoundingYear(members), [members]);
 
+  const onThisDay = useMemo(() => getOnThisDay(members), [members]);
+  const milestones = useMemo(() => getFamilyMilestones(members), [members]);
+
   return (
     <div className="home-dashboard">
       {/*
@@ -246,6 +250,37 @@ function HomeDashboard({ members, user, isLoading = false, onNavigate }) {
           <p className="hero__quote">Our family&rsquo;s story continues.</p>
         </div>
       </section>
+
+      {/*
+        ON THIS DAY. Only renders when today actually matches a past event, so
+        it never occupies space with an empty state. Memorial anniversaries are
+        worded differently from birthdays rather than lumped together.
+      */}
+      {onThisDay.length > 0 && (
+        <section className="otd">
+          <div className="otd__head">
+            <Icon name="sparkle" size={18} />
+            <h3>On this day</h3>
+          </div>
+          <ul className="otd__list">
+            {onThisDay.map((event) => (
+              <li key={event.id} className="otd__item">
+                <Avatar member={event.member} size="md" ring deceased={event.isMemorial} />
+                <div className="otd__body">
+                  <p className="otd__text">
+                    <strong>{event.member.name}</strong>{' '}
+                    {event.isMemorial ? 'was lost to us' : 'was born'} in{' '}
+                    <span className="t-tabular">{event.year}</span>.
+                  </p>
+                  <p className="otd__ago t-sm">
+                    {event.yearsAgo} {event.yearsAgo === 1 ? 'year' : 'years'} ago today
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="dashboard-stats">
         {isLoading ? (
@@ -359,18 +394,35 @@ function HomeDashboard({ members, user, isLoading = false, onNavigate }) {
             <h3>Family Highlights</h3>
           </div>
           <div className="widget-content">
+            {/* All derived from existing dates — no hardcoded values. */}
+            {milestones.oldestLiving && (
+              <div className="highlight-item">
+                <span className="highlight-label">Eldest</span>
+                <span className="highlight-value">
+                  {milestones.oldestLiving.member.name}
+                  <small className="t-tabular"> · {milestones.oldestLiving.age}</small>
+                </span>
+              </div>
+            )}
+            {milestones.newestArrival && (
+              <div className="highlight-item">
+                <span className="highlight-label">Newest arrival</span>
+                <span className="highlight-value">
+                  {milestones.newestArrival.member.name}
+                  <small className="t-tabular"> · {milestones.newestArrival.year}</small>
+                </span>
+              </div>
+            )}
             <div className="highlight-item">
-              <span className="highlight-label">Est.</span>
-              <span className="highlight-value">1947</span>
+              <span className="highlight-label">Living</span>
+              <span className="highlight-value t-tabular">{milestones.livingCount}</span>
             </div>
-            <div className="highlight-item">
-              <span className="highlight-label">Family Name</span>
-              <span className="highlight-value">Medina</span>
-            </div>
-            <div className="highlight-item">
-              <span className="highlight-label">Total Members</span>
-              <span className="highlight-value">{stats.totalMembers}</span>
-            </div>
+            {milestones.rememberedCount > 0 && (
+              <div className="highlight-item">
+                <span className="highlight-label">Remembered</span>
+                <span className="highlight-value t-tabular">{milestones.rememberedCount}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>

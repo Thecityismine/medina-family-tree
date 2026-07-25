@@ -9,6 +9,7 @@ import FamilyTree from './FamilyTree';
 import HomeDashboard from './HomeDashboard';
 import LocationMap from './LocationMap';
 import Settings from './Settings';
+import Timeline from './Timeline';
 import { Avatar, Badge, Button, Icon } from './ui';
 import './Dashboard.css';
 
@@ -20,6 +21,7 @@ const NAV_ITEMS = [
   { id: 'tree',      label: 'Family Tree',    icon: 'tree',     tab: true },
   { id: 'list',      label: 'Family Members', icon: 'users',    tab: true },
   { id: 'birthdays', label: 'Birthdays',      icon: 'cake',     tab: true },
+  { id: 'timeline',  label: 'Timeline',      icon: 'clock' },
   { id: 'locations', label: 'Locations',      icon: 'pin',      tab: true },
   { id: 'add',       label: 'Add Member',     icon: 'plus',     requiresEdit: true },
   { id: 'settings',  label: 'Settings',       icon: 'settings', requiresEdit: true }
@@ -178,6 +180,7 @@ function Dashboard({ user, userRole, onSignIn }) {
             <AddMemberForm members={members} onSuccess={() => handleNavigate('list')} />
           )}
           {view === 'birthdays' && <BirthdayCalendar members={members} />}
+          {view === 'timeline' && <Timeline members={members} />}
           {view === 'locations' && <LocationMap members={members} />}
           {view === 'settings' && canEdit && (
             <Settings user={user} userRole={userRole} members={members} />

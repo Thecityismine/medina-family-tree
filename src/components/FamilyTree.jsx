@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Avatar, Card, Icon, SegmentedControl, Stat } from './ui';
+import FamilyUnits from './FamilyUnits';
 import { calculateAge, parseBirthDate } from '../utils/birthdays';
 import { computeGenerations, getGenerationTitle } from '../utils/familyTreeGenerations';
 import MemberDetailModal from './MemberDetailModal';
@@ -89,7 +90,7 @@ function FamilyTree({ members }) {
   if (members.length === 0) {
     return (
       <div className="tree-empty-state">
-        <div className="tree-empty-icon">0</div>
+        <Icon name="tree" size={40} className="tree-empty-icon" />
         <h3>No Family Members Yet</h3>
         <p>Add family members to see your family tree</p>
       </div>
@@ -112,8 +113,9 @@ function FamilyTree({ members }) {
           onChange={setMode}
           size="lg"
           options={[
-            { value: 'list', label: 'List View', icon: <Icon name="grid" size={16} /> },
-            { value: 'canvas', label: 'Canvas View', icon: <Icon name="tree" size={16} /> }
+            { value: 'list', label: 'Generations', icon: <Icon name="grid" size={16} /> },
+            { value: 'families', label: 'Families', icon: <Icon name="heart" size={16} /> },
+            { value: 'canvas', label: 'Canvas', icon: <Icon name="tree" size={16} /> }
           ]}
         />
       </div>
@@ -130,9 +132,15 @@ function FamilyTree({ members }) {
         </Card>
       </div>
 
-      {mode === 'canvas' ? (
+      {mode === 'canvas' && (
         <FamilyTreeCanvas members={members} onSelectMember={openMemberModal} />
-      ) : (
+      )}
+
+      {mode === 'families' && (
+        <FamilyUnits members={members} onSelectMember={openMemberModal} />
+      )}
+
+      {mode === 'list' && (
         <>
       <div className="tree-info-box">
         <div className="info-icon">i</div>

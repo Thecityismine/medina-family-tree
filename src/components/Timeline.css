@@ -1,0 +1,181 @@
+/* ==========================================================================
+   TIMELINE
+   Built from birthDate + passedAwayDate. A 'union' event type exists in the
+   model but never fires until members carry a marriageDate.
+   ========================================================================== */
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+.timeline__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.timeline__span {
+  color: var(--ink-500);
+  font-size: var(--t-sm);
+  margin-top: var(--space-2);
+}
+
+/* -------------------------------------------------------------------- DECADE */
+.decade {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.decade__label {
+  font-family: var(--font-display);
+  font-size: var(--t-h2);
+  color: var(--gold-400);
+  /* Sticks while scrolling a long decade, so you never lose your place. */
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  padding: var(--space-2) 0;
+  background: linear-gradient(var(--bg) 70%, transparent);
+}
+
+.decade__events {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* --------------------------------------------------------------------- EVENT
+   Grid: [year] [spine] [card]. The spine column is a fixed rail so dots align
+   perfectly regardless of year width. */
+.event {
+  display: grid;
+  grid-template-columns: 4.5rem 24px 1fr;
+  align-items: stretch;
+  gap: var(--space-3);
+}
+
+.event__year {
+  font-size: var(--t-sm);
+  font-weight: 600;
+  color: var(--ink-500);
+  text-align: right;
+  padding-top: var(--space-4);
+}
+
+.event__spine {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+/* The continuous vertical line, drawn behind the dot. */
+.event__spine::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--hairline);
+}
+
+/* Trim the line at the ends so it doesn't overshoot the first/last dot. */
+.event:first-child .event__spine::before { top: var(--space-5); }
+.event:last-child .event__spine::before { bottom: calc(100% - var(--space-5)); }
+
+.event__dot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-top: var(--space-4);
+  border-radius: var(--r-full);
+  background: var(--surface-2);
+  color: var(--gold-400);
+  /* Ring in the page colour punches the dot out of the spine line. */
+  box-shadow: 0 0 0 3px var(--bg), inset 0 0 0 1px var(--hairline-gold);
+}
+
+/* Memorial events read as quiet rather than celebratory. */
+.event--death .event__dot {
+  color: var(--ink-500);
+  box-shadow: 0 0 0 3px var(--bg), inset 0 0 0 1px var(--hairline);
+}
+
+.event--union .event__dot {
+  color: var(--link-union);
+  box-shadow: 0 0 0 3px var(--bg), inset 0 0 0 1px var(--hairline);
+}
+
+.event__card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  margin-bottom: var(--space-2);
+  padding: var(--space-3);
+  background: var(--surface-1);
+  border: none;
+  border-radius: var(--r-md);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  text-align: left;
+  transition: background-color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.event__card:hover {
+  background: var(--surface-2);
+  box-shadow: var(--elev-2), inset 0 0 0 1px var(--hairline-strong);
+}
+
+.event__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.event__title {
+  font-size: var(--t-base);
+  font-weight: 600;
+  color: var(--ink-50);
+}
+
+.event__meta {
+  font-size: var(--t-sm);
+  color: var(--ink-500);
+}
+
+/* -------------------------------------------------------------- EMPTY STATE */
+.timeline-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-9) var(--space-5);
+  color: var(--ink-500);
+  text-align: center;
+}
+
+.timeline-empty .icon { color: var(--ink-600); opacity: 0.7; }
+.timeline-empty .t-sm { max-width: 38ch; }
+
+/* ------------------------------------------------------------------- MOBILE */
+@media (max-width: 600px) {
+  .timeline { gap: var(--space-6); }
+
+  /* Year moves above the card; the spine keeps the chronological thread. */
+  .event { grid-template-columns: 2.75rem 20px 1fr; gap: var(--space-2); }
+  .event__year { font-size: var(--t-xs); }
+  .event__spine { justify-content: flex-start; }
+  .event__dot { width: 20px; height: 20px; }
+
+  .timeline__header { align-items: stretch; }
+}

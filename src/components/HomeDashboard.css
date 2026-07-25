@@ -302,3 +302,64 @@
   .dashboard-stats { grid-template-columns: 1fr 1fr; }
   .hero__facts { font-size: var(--t-base); gap: var(--space-2); }
 }
+
+/* --------------------------------------------------------------- ON THIS DAY
+   Renders only when today matches a past event, so it never shows an empty
+   state. Memorial entries are worded and toned differently from births. */
+.otd {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(140% 120% at 0% 0%, var(--gold-tint-8), transparent 62%),
+    var(--surface-1);
+  box-shadow: var(--elev-1), inset 0 0 0 1px var(--hairline-gold);
+}
+
+.otd__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--gold-400);
+}
+
+.otd__head h3 { font-size: var(--t-h3); color: var(--gold-300); }
+
+.otd__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.otd__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.otd__body { min-width: 0; }
+
+.otd__text {
+  font-size: var(--t-base);
+  color: var(--ink-200);
+}
+
+.otd__text strong { color: var(--ink-50); font-weight: 600; }
+
+.otd__ago { color: var(--ink-500); }
+
+/* Highlight values now hold a name plus a figure, so allow two lines. */
+.highlight-value small {
+  font-family: var(--font-sans);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--ink-500);
+}
+
+.highlight-item { gap: var(--space-3); }
+.highlight-value { text-align: right; min-width: 0; }

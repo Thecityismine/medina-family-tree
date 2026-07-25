@@ -1,0 +1,169 @@
+/* ==========================================================================
+   FAMILIES — households derived from spouseIds + parentIds
+   ========================================================================== */
+
+.units {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+.units__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: var(--space-5);
+  align-items: start;
+}
+
+/* ---------------------------------------------------------------------- UNIT */
+.unit {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-1);
+  border-radius: var(--r-lg);
+  box-shadow: var(--elev-1), inset 0 0 0 1px var(--hairline);
+  overflow: hidden;
+  transition: box-shadow var(--dur-base) var(--ease-out);
+}
+
+.unit:hover {
+  box-shadow: var(--elev-2), inset 0 0 0 1px var(--hairline-strong);
+}
+
+/* ------------------------------------------------------------------ PARTNERS */
+.unit__partners {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  /* Warm wash marks the couple as the head of the household. */
+  background:
+    radial-gradient(120% 100% at 50% 0%, var(--gold-tint-8), transparent 70%);
+}
+
+.unit__partner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-2);
+  background: none;
+  border: none;
+  border-radius: var(--r-md);
+  text-align: center;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.unit__partner:hover { background: var(--surface-2); }
+
+.unit__partner-name {
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  font-weight: 600;
+  color: var(--ink-50);
+  line-height: var(--lh-heading);
+  /* Long compound surnames must wrap rather than overflow the column. */
+  overflow-wrap: anywhere;
+}
+
+.unit__partner-meta {
+  font-size: var(--t-sm);
+  color: var(--ink-500);
+}
+
+/* The marriage link. Uses the same rose as the canvas union connector, so the
+   two views describe the same relationship with the same colour. */
+.unit__bond {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  /* Aligns with the avatar's vertical centre, not the top of the column. */
+  margin-top: calc(var(--avatar-lg) / 2 - 16px + var(--space-2));
+  border-radius: var(--r-full);
+  background: var(--surface-2);
+  color: var(--link-union);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+/* ------------------------------------------------------------------ CHILDREN */
+.unit__children {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  /* Hairline divider only — not a nested card. */
+  box-shadow: inset 0 1px 0 var(--hairline);
+}
+
+.unit__children-label { color: var(--ink-500); }
+
+.unit__children-list,
+.units__unattached-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.unit__child {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 100%;
+  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
+  background: var(--surface-2);
+  border: none;
+  border-radius: var(--r-full);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  transition: background-color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.unit__child:hover {
+  background: var(--surface-3);
+  box-shadow: inset 0 0 0 1px var(--hairline-gold);
+}
+
+.unit__child-name {
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--ink-200);
+  min-width: 0;
+}
+
+/* ---------------------------------------------------------------- UNATTACHED */
+.units__unattached {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-6);
+  box-shadow: inset 0 1px 0 var(--hairline);
+}
+
+.units__unattached .t-sm { color: var(--ink-500); max-width: var(--measure); }
+
+/* -------------------------------------------------------------- EMPTY STATE */
+.units-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-9) var(--space-5);
+  color: var(--ink-500);
+  text-align: center;
+}
+
+.units-empty .icon { color: var(--ink-600); opacity: 0.7; }
+.units-empty .t-sm { max-width: 34ch; }
+
+@media (max-width: 600px) {
+  .units__grid { grid-template-columns: 1fr; gap: var(--space-4); }
+  .unit__partners { padding: var(--space-5) var(--space-4) var(--space-4); }
+}
