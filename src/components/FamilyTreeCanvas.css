@@ -271,16 +271,29 @@
 }
 
 .ftc-toolbar button {
-  width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
   height: 36px;
+  padding: 0 10px;
   border-radius: 8px;
   background: #1C1C1E;
   border: 1px solid #2C2C2E;
   color: #F5F5F7;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
   transition: all 0.2s;
+}
+
+.ftc-toolbar button[aria-label="Zoom in"],
+.ftc-toolbar button[aria-label="Zoom out"] {
+  width: 36px;
+  padding: 0;
+  font-size: 16px;
 }
 
 .ftc-toolbar button:hover {
