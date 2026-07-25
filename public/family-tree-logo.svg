@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Background (dark, for iPhone home screen icon look) -->
+  <rect width="1024" height="1024" rx="220" fill="#0B0B0D"></rect>
+
+  <!-- Subtle vignette -->
+  <radialGradient id="v" cx="50%" cy="40%" r="70%">
+    <stop offset="0%" stop-color="#17171B" stop-opacity="0.65"></stop>
+    <stop offset="100%" stop-color="#000000" stop-opacity="0.0"></stop>
+  </radialGradient>
+  <rect width="1024" height="1024" rx="220" fill="url(#v)"></rect>
+
+  <!-- Gold gradient -->
+  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#F7E7A6"></stop>
+    <stop offset="35%" stop-color="#D9B65A"></stop>
+    <stop offset="70%" stop-color="#B8872A"></stop>
+    <stop offset="100%" stop-color="#F2D37D"></stop>
+  </linearGradient>
+
+  <!-- Monogram M (stroke style so the tree reads clearly inside) -->
+  <path d="M 250 760
+       L 250 300
+       Q 250 255 295 255
+       Q 330 255 350 290
+       L 512 590
+       L 674 290
+       Q 694 255 729 255
+       Q 774 255 774 300
+       L 774 760" fill="none" stroke="url(#gold)" stroke-width="72" stroke-linecap="round" stroke-linejoin="round" opacity="0.98"></path>
+
+  <!-- Tree (centered) -->
+  <g transform="translate(512 520)">
+    <!-- canopy -->
+    <path d="M 0 -240
+         C 70 -240 120 -190 120 -120
+         C 120 -70 95 -35 55 -15
+         C 85 0 105 30 105 70
+         C 105 135 55 185 0 185
+         C -55 185 -105 135 -105 70
+         C -105 30 -85 0 -55 -15
+         C -95 -35 -120 -70 -120 -120
+         C -120 -190 -70 -240 0 -240 Z" fill="url(#gold)" opacity="0.95"></path>
+    <!-- trunk -->
+    <path d="M -28 180
+         C -20 105 -20 35 -20 -10
+         C -60 15 -85 45 -95 85
+         C -60 65 -40 78 -28 96
+         C -22 125 -22 155 -22 180 Z" fill="#0B0B0D" opacity="0.9"></path>
+    <path d="M 28 180
+         C 20 105 20 35 20 -10
+         C 60 15 85 45 95 85
+         C 60 65 40 78 28 96
+         C 22 125 22 155 22 180 Z" fill="#0B0B0D" opacity="0.9"></path>
+    <rect x="-22" y="-40" width="44" height="240" rx="18" fill="#0B0B0D" opacity="0.9"></rect>
+  </g>
+
+  <!-- Optional: tiny highlight line for “premium” feel -->
+  <path d="M 210 292 Q 512 210 814 292" fill="none" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="10" stroke-linecap="round"></path>
+</svg>
