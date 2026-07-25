@@ -33,11 +33,13 @@
   overflow: hidden;
 }
 
+/* No backdrop-filter here. It cost a compositor layer on phones for an effect
+   nobody sees behind a 72%-opaque scrim, and any stacking slip renders it
+   over the drawer instead of under it. */
 .sidebar-overlay {
   position: fixed;
   inset: 0;
   background: var(--scrim);
-  backdrop-filter: blur(3px);
   z-index: var(--z-scrim);
   animation: fade-in var(--dur-base) var(--ease-out);
 }

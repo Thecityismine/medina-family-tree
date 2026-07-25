@@ -149,8 +149,10 @@
   --z-canvas:   1;
   --z-sticky:   100;
   --z-tabbar:   900;
+  /* A scrim always sits BEHIND the surface it backs, and above everything
+     else. Above the tab bar, below the drawer. */
+  --z-scrim:    950;
   --z-drawer:   1000;
-  --z-scrim:    1100;
   --z-modal:    1200;
   --z-toast:    1300;
 }
