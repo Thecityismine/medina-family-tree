@@ -13,6 +13,7 @@ function EditMemberModal({ member, members = [], onClose }) {
     passedAwayDate: member.passedAwayDate || '',
     location: member.location || '',
     gender: member.gender || '',
+    branch: member.branch || '',
     notes: member.notes || '',
     parentIds: member.parentIds || [],
     spouseId: (member.spouseIds && member.spouseIds[0]) || ''
@@ -69,6 +70,7 @@ function EditMemberModal({ member, members = [], onClose }) {
         passedAwayDate: formData.passedAwayDate,
         location: formData.location,
         gender: formData.gender,
+        branch: formData.branch,
         notes: formData.notes,
         parentIds: formData.parentIds,
         spouseIds,
@@ -206,6 +208,20 @@ function EditMemberModal({ member, members = [], onClose }) {
               <option value="male">Male</option>
               <option value="non-binary">Non-binary</option>
               <option value="unspecified">Prefer not to say</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label>Family Branch (optional)</label>
+            <select
+              name="branch"
+              value={formData.branch}
+              onChange={handleChange}
+            >
+              <option value="">Select branch...</option>
+              <option value="medina">Medina family</option>
+              <option value="anseli">Anseli family</option>
+              <option value="shared">Shared (you two + descendants)</option>
             </select>
           </div>
 

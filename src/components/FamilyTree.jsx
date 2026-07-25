@@ -1,5 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { calculateAge, formatBirthDate, parseBirthDate } from '../utils/birthdays';
+import React, { useEffect, useState } from 'react';
+import { calculateAge, parseBirthDate } from '../utils/birthdays';
+import MemberDetailModal from './MemberDetailModal';
+import FamilyTreeCanvas from './FamilyTreeCanvas';
 import './FamilyTree.css';
 
 const SELF_RELATIONSHIPS = ['You (Admin)', 'You', 'Self'];
@@ -72,34 +74,9 @@ const createMemberSorter = (selfMember) => {
 };
 
 function FamilyTree({ members }) {
+  const [mode, setMode] = useState('list');
   const [selectedMember, setSelectedMember] = useState(null);
   const [treeData, setTreeData] = useState({ generations: [], stats: {} });
-  const memberById = useMemo(() => {
-    return new Map(members.map((member) => [member.id, member]));
-  }, [members]);
-  const memberNameMap = useMemo(() => {
-    return members.reduce((acc, member) => {
-      acc[member.id] = member.name || 'Unnamed member';
-      return acc;
-    }, {});
-  }, [members]);
-
-  const childrenMap = useMemo(() => {
-    const map = {};
-    members.forEach((member) => {
-      if (!Array.isArray(member.parentIds)) return;
-      member.parentIds.forEach((parentId) => {
-        if (!map[parentId]) {
-          map[parentId] = [];
-        }
-        map[parentId].push(member.name || 'Unnamed member');
-      });
-    });
-    Object.keys(map).forEach((parentId) => {
-      map[parentId].sort((a, b) => a.localeCompare(b));
-    });
-    return map;
-  }, [members]);
 
   useEffect(() => {
     buildTreeStructure();
@@ -259,39 +236,6 @@ function FamilyTree({ members }) {
     setSelectedMember(null);
   };
 
-  const formatCreatedAt = (value) => {
-    if (!value) return 'Unknown';
-    if (typeof value.toDate === 'function') {
-      return value.toDate().toLocaleDateString();
-    }
-    if (typeof value.seconds === 'number') {
-      return new Date(value.seconds * 1000).toLocaleDateString();
-    }
-    if (typeof value._seconds === 'number') {
-      return new Date(value._seconds * 1000).toLocaleDateString();
-    }
-    const parsed = parseBirthDate(value);
-    return parsed ? parsed.toLocaleDateString() : 'Unknown';
-  };
-
-  const resolveNames = (ids) => {
-    if (!Array.isArray(ids)) return [];
-    return ids.map((id) => memberNameMap[id]).filter(Boolean);
-  };
-
-  const getParentIdsForIds = (ids) => {
-    if (!Array.isArray(ids) || ids.length === 0) return [];
-    const nextIds = [];
-    ids.forEach((id) => {
-      const member = memberById.get(id);
-      if (!member || !Array.isArray(member.parentIds)) return;
-      member.parentIds.forEach((parentId) => {
-        if (parentId) nextIds.push(parentId);
-      });
-    });
-    return Array.from(new Set(nextIds));
-  };
-
   if (members.length === 0) {
     return (
       <div className="tree-empty-state">
@@ -309,6 +253,23 @@ function FamilyTree({ members }) {
         <p className="tree-subtitle">Est. 1947</p>
       </div>
 
+      <div className="tree-mode-toggle">
+        <button
+          type="button"
+          className={mode === 'list' ? 'tree-mode-btn active' : 'tree-mode-btn'}
+          onClick={() => setMode('list')}
+        >
+          List View
+        </button>
+        <button
+          type="button"
+          className={mode === 'canvas' ? 'tree-mode-btn active' : 'tree-mode-btn'}
+          onClick={() => setMode('canvas')}
+        >
+          Canvas View
+        </button>
+      </div>
+
       <div className="tree-stats">
         <div className="tree-stat-card">
           <div className="tree-stat-number">{treeData.stats.totalGenerations}</div>
@@ -324,6 +285,10 @@ function FamilyTree({ members }) {
         </div>
       </div>
 
+      {mode === 'canvas' ? (
+        <FamilyTreeCanvas members={members} onSelectMember={openMemberModal} />
+      ) : (
+        <>
       <div className="tree-info-box">
         <div className="info-icon">i</div>
         <div className="info-text">
@@ -404,107 +369,11 @@ function FamilyTree({ members }) {
           </div>
         </div>
       </div>
+        </>
+      )}
 
       {selectedMember && (
-        <div className="tree-modal-overlay" onClick={closeMemberModal}>
-          <div className="tree-modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="tree-modal-close" onClick={closeMemberModal}>X</button>
-
-            <div className="tree-modal-header">
-              <div className="tree-modal-photo">
-                {selectedMember.photoURL ? (
-                  <img src={selectedMember.photoURL} alt={selectedMember.name} />
-                ) : (
-                  <div className="tree-modal-initial">
-                    {selectedMember.name?.charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </div>
-              <div className="tree-modal-title">
-                <h3>{selectedMember.name}</h3>
-                <p>{selectedMember.relationship || 'Family Member'}</p>
-              </div>
-            </div>
-
-            <div className="tree-modal-body">
-              {(() => {
-                const parentIds = Array.isArray(selectedMember.parentIds)
-                  ? selectedMember.parentIds
-                  : [];
-                const parentNames = resolveNames(parentIds);
-                const grandParentIds = getParentIdsForIds(parentIds);
-                const grandParentNames = resolveNames(grandParentIds);
-                const greatGrandParentIds = getParentIdsForIds(grandParentIds);
-                const greatGrandParentNames = resolveNames(greatGrandParentIds);
-
-                return (
-                  <>
-                    {parentNames.length > 0 && (
-                      <div className="tree-modal-detail">
-                        <span className="detail-label">Parents:</span>
-                        <span className="detail-value">{parentNames.join(', ')}</span>
-                      </div>
-                    )}
-
-                    {grandParentNames.length > 0 && (
-                      <div className="tree-modal-detail">
-                        <span className="detail-label">Grandparents:</span>
-                        <span className="detail-value">{grandParentNames.join(', ')}</span>
-                      </div>
-                    )}
-
-                    {greatGrandParentNames.length > 0 && (
-                      <div className="tree-modal-detail">
-                        <span className="detail-label">Great Grandparents:</span>
-                        <span className="detail-value">{greatGrandParentNames.join(', ')}</span>
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
-
-              {childrenMap[selectedMember.id]?.length > 0 && (
-                <div className="tree-modal-detail">
-                  <span className="detail-label">Children:</span>
-                  <span className="detail-value">
-                    {childrenMap[selectedMember.id].join(', ')}
-                  </span>
-                </div>
-              )}
-
-              <div className="tree-modal-detail">
-                <span className="detail-label">Birthday:</span>
-                <span className="detail-value">{formatBirthDate(selectedMember.birthDate)}</span>
-              </div>
-
-              {selectedMember.passedAwayDate && (
-                <div className="tree-modal-detail">
-                  <span className="detail-label">Passed Away:</span>
-                  <span className="detail-value">{formatBirthDate(selectedMember.passedAwayDate)}</span>
-                </div>
-              )}
-
-              {calculateAge(selectedMember.birthDate) !== null && (
-                <div className="tree-modal-detail">
-                  <span className="detail-label">Age:</span>
-                  <span className="detail-value">{calculateAge(selectedMember.birthDate)} years old</span>
-                </div>
-              )}
-
-              {selectedMember.location && (
-                <div className="tree-modal-detail">
-                  <span className="detail-label">Location:</span>
-                  <span className="detail-value">{selectedMember.location}</span>
-                </div>
-              )}
-
-              <div className="tree-modal-detail">
-                <span className="detail-label">Added:</span>
-                <span className="detail-value">{formatCreatedAt(selectedMember.createdAt)}</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <MemberDetailModal member={selectedMember} members={members} onClose={closeMemberModal} />
       )}
     </div>
   );

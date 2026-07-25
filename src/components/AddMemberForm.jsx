@@ -13,6 +13,7 @@ function AddMemberForm({ members = [], onSuccess }) {
     passedAwayDate: '',
     location: '',
     gender: '',
+    branch: '',
     notes: '',
     parentIds: [],
     spouseId: ''
@@ -66,6 +67,7 @@ function AddMemberForm({ members = [], onSuccess }) {
         passedAwayDate: formData.passedAwayDate,
         location: formData.location,
         gender: formData.gender,
+        branch: formData.branch,
         notes: formData.notes,
         parentIds: formData.parentIds,
         spouseIds,
@@ -89,6 +91,7 @@ function AddMemberForm({ members = [], onSuccess }) {
         passedAwayDate: '',
         location: '',
         gender: '',
+        branch: '',
         notes: '',
         parentIds: [],
         spouseId: ''
@@ -209,6 +212,22 @@ function AddMemberForm({ members = [], onSuccess }) {
               <option value="male">Male</option>
               <option value="non-binary">Non-binary</option>
               <option value="unspecified">Prefer not to say</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="form-row single">
+          <div className="form-group">
+            <label>Family Branch (optional)</label>
+            <select
+              name="branch"
+              value={formData.branch}
+              onChange={handleChange}
+            >
+              <option value="">Select branch...</option>
+              <option value="medina">Medina family</option>
+              <option value="anseli">Anseli family</option>
+              <option value="shared">Shared (you two + descendants)</option>
             </select>
           </div>
         </div>

@@ -38,6 +38,36 @@
   font-weight: 500;
 }
 
+.tree-mode-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.tree-mode-btn {
+  padding: 10px 24px;
+  background: #1C1C1E;
+  border: 1px solid #2C2C2E;
+  border-radius: 8px;
+  color: #8E8E93;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.tree-mode-btn:hover {
+  border-color: #B8956A;
+  color: #F5F5F7;
+}
+
+.tree-mode-btn.active {
+  background: #B8956A;
+  border-color: #B8956A;
+  color: white;
+}
+
 .tree-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

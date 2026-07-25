@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { auth, db } from '../firebase';
 import { updatePassword } from 'firebase/auth';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, writeBatch } from 'firebase/firestore';
 import { parseBirthDate } from '../utils/birthdays';
 import './Settings.css';
+
+const BRANCH_WRITE_CHUNK_SIZE = 450; // Firestore writeBatch cap is 500 ops
 
 const formatBirthDateValue = (value) => {
   const date = parseBirthDate(value);
@@ -35,6 +37,10 @@ function Settings({ user, userRole, members }) {
     newPassword: '',
     confirmPassword: ''
   });
+
+  const [branchEdits, setBranchEdits] = useState({});
+  const [branchFilter, setBranchFilter] = useState('');
+  const [savingBranches, setSavingBranches] = useState(false);
 
   const showMessage = (type, text) => {
     setMessage({ type, text });
@@ -161,6 +167,46 @@ function Settings({ user, userRole, members }) {
     }
   };
 
+  const handleBranchChange = (memberId, value) => {
+    setBranchEdits((prev) => ({ ...prev, [memberId]: value }));
+  };
+
+  const handleSaveBranches = async () => {
+    setSavingBranches(true);
+
+    try {
+      const changedIds = Object.keys(branchEdits).filter((id) => {
+        const member = members.find((m) => m.id === id);
+        const currentBranch = member?.branch || '';
+        return branchEdits[id] && branchEdits[id] !== currentBranch;
+      });
+
+      if (changedIds.length === 0) {
+        showMessage('success', 'No branch changes to save.');
+        return;
+      }
+
+      for (let i = 0; i < changedIds.length; i += BRANCH_WRITE_CHUNK_SIZE) {
+        const batch = writeBatch(db);
+        changedIds.slice(i, i + BRANCH_WRITE_CHUNK_SIZE).forEach((id) => {
+          batch.update(doc(db, 'members', id), { branch: branchEdits[id] });
+        });
+        await batch.commit();
+      }
+
+      showMessage('success', `Updated branch for ${changedIds.length} member(s).`);
+    } catch (error) {
+      console.error('Error saving branch assignments:', error);
+      showMessage('error', error.message);
+    } finally {
+      setSavingBranches(false);
+    }
+  };
+
+  const filteredBranchMembers = [...members]
+    .filter((member) => (member.name || '').toLowerCase().includes(branchFilter.toLowerCase()))
+    .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
   return (
     <div className="settings-container">
       <div className="settings-header">
@@ -199,6 +245,12 @@ function Settings({ user, userRole, members }) {
           onClick={() => setActiveTab('data')}
         >
           Data & Export
+        </button>
+        <button
+          className={`settings-tab ${activeTab === 'branches' ? 'active' : ''}`}
+          onClick={() => setActiveTab('branches')}
+        >
+          Family Branches
         </button>
       </div>
 
@@ -393,6 +445,80 @@ function Settings({ user, userRole, members }) {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'branches' && (
+          <div className="settings-section">
+            <h3>Family Branches</h3>
+            <p className="section-description">
+              Tag each member as Medina, Anseli, or Shared so the Canvas tree view can split the two
+              families visually. In-laws inherit the side they married into. You and your spouse
+              (and your direct descendants) should be tagged Shared.
+            </p>
+
+            <input
+              type="text"
+              className="branch-filter-input"
+              placeholder="Filter by name..."
+              value={branchFilter}
+              onChange={(e) => setBranchFilter(e.target.value)}
+            />
+
+            <div className="branch-table">
+              <div className="branch-table-header">
+                <span>Name</span>
+                <span>Relationship</span>
+                <span>Branch</span>
+              </div>
+
+              {filteredBranchMembers.map((member) => {
+                const pendingBranch = branchEdits[member.id] ?? member.branch ?? '';
+                const spouseId = Array.isArray(member.spouseIds) ? member.spouseIds[0] : null;
+                const spouseMember = spouseId ? members.find((m) => m.id === spouseId) : null;
+                const spousePendingBranch = spouseMember
+                  ? branchEdits[spouseMember.id] ?? spouseMember.branch ?? ''
+                  : '';
+                const showSpouseWarning = Boolean(
+                  spouseMember && pendingBranch && spousePendingBranch && pendingBranch !== spousePendingBranch
+                );
+
+                return (
+                  <div className="branch-row" key={member.id}>
+                    <span className="branch-row-name">
+                      {member.name || 'Unnamed member'}
+                      {!pendingBranch && <span className="branch-pill unassigned">Unassigned</span>}
+                    </span>
+                    <span className="branch-row-relationship">{member.relationship || '—'}</span>
+                    <span className="branch-row-control">
+                      <select
+                        value={pendingBranch}
+                        onChange={(e) => handleBranchChange(member.id, e.target.value)}
+                      >
+                        <option value="">Select branch...</option>
+                        <option value="medina">Medina family</option>
+                        <option value="anseli">Anseli family</option>
+                        <option value="shared">Shared</option>
+                      </select>
+                      {showSpouseWarning && (
+                        <span className="branch-warning">
+                          Spouse ({spouseMember.name || 'Unnamed member'}) is on a different branch
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              className="btn-save"
+              onClick={handleSaveBranches}
+              disabled={savingBranches}
+            >
+              {savingBranches ? 'Saving...' : 'Save All'}
+            </button>
           </div>
         )}
       </div>
