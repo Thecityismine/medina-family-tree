@@ -104,3 +104,39 @@ export const getNextBirthdayDate = (value, today = new Date()) => {
   }
   return thisYear;
 };
+
+/**
+ * How to describe a member's age or lifespan.
+ *
+ * `calculateAge` always measures to TODAY, so a member who died in 1998 was
+ * being labelled "Age 125". A deceased member gets their years as lived, not
+ * as elapsed.
+ *
+ * @returns {{ text: string, deceased: boolean } | null}
+ */
+export const describeLifespan = (member) => {
+  const born = parseBirthDate(member?.birthDate);
+  const died = parseBirthDate(member?.passedAwayDate);
+
+  if (died) {
+    // Age reached at death, not age they would be now.
+    let years = died.getFullYear() - (born ? born.getFullYear() : died.getFullYear());
+    if (born) {
+      const monthDelta = died.getMonth() - born.getMonth();
+      if (monthDelta < 0 || (monthDelta === 0 && died.getDate() < born.getDate())) {
+        years -= 1;
+      }
+    }
+    const span = born
+      ? born.getFullYear() + '\u2013' + died.getFullYear()
+      : 'd. ' + died.getFullYear();
+    return {
+      text: born && years >= 0 ? span + ' \u00b7 ' + years + ' yrs' : span,
+      deceased: true
+    };
+  }
+
+  const age = calculateAge(member?.birthDate);
+  if (age === null) return null;
+  return { text: 'Age ' + age, deceased: false };
+};

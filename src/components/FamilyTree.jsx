@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Avatar, Card, Icon, SegmentedControl, Stat } from './ui';
 import FamilyUnits from './FamilyUnits';
-import { calculateAge, parseBirthDate } from '../utils/birthdays';
+import { describeLifespan, parseBirthDate } from '../utils/birthdays';
 import { computeGenerations, getGenerationTitle } from '../utils/familyTreeGenerations';
 import MemberDetailModal from './MemberDetailModal';
 import FamilyTreeCanvas from './FamilyTreeCanvas';
@@ -162,7 +162,7 @@ function FamilyTree({ members }) {
 
             <div className="generation-members">
               {generation.members.map((member) => {
-                const age = calculateAge(member.birthDate);
+                const lifespan = describeLifespan(member);
                 const isYou = ['You (Admin)', 'You', 'Self'].includes(member.relationship);
 
                 return (
@@ -183,8 +183,10 @@ function FamilyTree({ members }) {
                     <div className="tree-person-info">
                       <div className="tree-person-name">{member.name}</div>
                       <div className="tree-person-relation">{member.relationship || 'Family Member'}</div>
-                      {age !== null && (
-                        <div className="tree-person-age">Age {age}</div>
+                      {lifespan && (
+                        <div className={lifespan.deceased ? 'tree-person-age is-memorial' : 'tree-person-age'}>
+                          {lifespan.text}
+                        </div>
                       )}
                     </div>
 

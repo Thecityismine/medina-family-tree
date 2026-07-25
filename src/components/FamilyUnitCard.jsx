@@ -1,21 +1,16 @@
 import React from 'react';
 import { Avatar, Icon } from './ui';
-import { calculateAge, parseBirthDate } from '../utils/birthdays';
+import { describeLifespan } from '../utils/birthdays';
 
 /* A household rather than a person: the couple (or single parent) on top,
    their children beneath. Reading "John & Mary -> Alex, George, Steven"
    carries the shape of a family in a way three separate cards cannot. */
 
+/* Shared with the generations view via describeLifespan, so a deceased member
+   is never labelled with an age measured to today. */
 const lifespan = (member) => {
-  const born = parseBirthDate(member.birthDate);
-  if (!born) return member.relationship || 'Family Member';
-
-  const birthYear = born.getFullYear();
-  const died = parseBirthDate(member.passedAwayDate);
-  if (died) return birthYear + ' – ' + died.getFullYear();
-
-  const age = calculateAge(member.birthDate);
-  return age !== null ? birthYear + ' · ' + age : String(birthYear);
+  const described = describeLifespan(member);
+  return described ? described.text : member.relationship || 'Family Member';
 };
 
 function FamilyUnitCard({ unit, onSelectMember }) {

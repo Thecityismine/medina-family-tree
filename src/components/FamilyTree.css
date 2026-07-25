@@ -4,13 +4,14 @@
 
 .tree-empty-state {
   text-align: center;
-  padding: 80px 20px;
+  padding: var(--space-9) var(--space-5);
   color: var(--ink-500);
 }
 
 .tree-empty-icon {
-  font-size: 80px;
   margin-bottom: var(--space-5);
+  color: var(--ink-600);
+  opacity: 0.7;
 }
 
 .tree-empty-state h3 {
@@ -103,10 +104,10 @@
 }
 
 .generation-badge {
-  padding: var(--space-2) 16px;
+  padding: var(--space-2) var(--space-4);
   background: var(--gold-500);
   color: var(--on-gold);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-full);
   font-size: 13px;
   font-weight: 600;
   text-transform: uppercase;
@@ -129,7 +130,11 @@
 .generation-members {
   display: flex;
   justify-content: center;
-  gap: var(--space-6);
+  /* Cards are 180px wide; a 32px gutter read as cramped against them. The
+     extra row-gap keeps wrapped rows from crowding vertically, where the
+     hover lift needs somewhere to go. */
+  column-gap: var(--space-7);
+  row-gap: var(--space-8);
   flex-wrap: wrap;
 }
 
@@ -146,7 +151,9 @@
 }
 
 .tree-person-card:hover {
-  transform: translateY(-8px);
+  /* Was translateY(-8px) — a big jump that slid the card out from under the
+     cursor. (The token migration only rewrote the -2px/-4px variants.) */
+  transform: scale(1.02);
   box-shadow: var(--elev-3);
   border-color: var(--gold-500);
 }
@@ -208,20 +215,35 @@
 .tree-person-age {
   font-size: 12px;
   color: var(--gold-400);
+  font-variant-numeric: tabular-nums;
 }
 
+/* A lifespan is a memorial, not a highlight — it should not compete with the
+   gold used for living members' ages. */
+.tree-person-age.is-memorial {
+  color: var(--ink-500);
+}
+
+/* Base badge: static, so it is safe to reuse anywhere (e.g. in the legend).
+   Only a badge INSIDE a person card gets pinned to the corner — previously the
+   absolute positioning lived here, so the legend's copy escaped its container
+   and flew to the top-right of the viewport. */
 .you-badge {
-  position: absolute;
-  top: -10px;
-  right: -10px;
   padding: var(--space-1) 12px;
   background: var(--gold-500);
   color: var(--on-gold);
-  border-radius: var(--r-md);
+  border-radius: var(--r-full);
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   box-shadow: var(--elev-1);
+}
+
+/* Corner pin, scoped to the card only. */
+.tree-person-card .you-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
 }
 
 .generation-spacer {
@@ -264,8 +286,8 @@
 }
 
 .legend-badge {
-  padding: var(--space-1) 12px;
-  border-radius: var(--r-md);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--r-full);
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -281,7 +303,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: var(--z-modal);
   padding: var(--space-5);
   animation: fadeIn 0.3s;
 }
