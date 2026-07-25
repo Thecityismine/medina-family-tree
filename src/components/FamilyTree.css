@@ -1,5 +1,14 @@
+/* Vertical rhythm comes from ONE gap here, not from per-child margin-bottom.
+   The margins were the bug: rewriting .tree-mode-toggle and .tree-stats during
+   the token migration dropped theirs, so the toggle, the stat row, and the
+   content below all collapsed against each other.
+   (max-width was dead too — the shell already caps at --content-max.) */
 .family-tree-container {
-  max-width: 1400px;
+  display: flex;
+  flex-direction: column;
+  /* 48px between major sections. Erring generous deliberately — the previous
+     collapse read as broken, and a heritage archive wants air. */
+  gap: var(--space-7);
 }
 
 .tree-empty-state {
@@ -23,7 +32,6 @@
 
 .tree-header {
   text-align: center;
-  margin-bottom: var(--space-6);
 }
 
 .tree-header h2 {
@@ -50,7 +58,7 @@
 .tree-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--space-4);
+  gap: var(--space-5);
 }
 
 
@@ -65,7 +73,6 @@
   background: var(--gold-tint-8);
   border-left: 3px solid var(--gold-500);
   border-radius: var(--r-sm);
-  margin-bottom: var(--space-7);
 }
 
 .info-icon {
@@ -93,6 +100,10 @@
 
 .generation-group {
   margin-bottom: var(--space-5);
+}
+
+.generation-group:last-child {
+  margin-bottom: 0;
 }
 
 .generation-header {
@@ -251,7 +262,6 @@
 }
 
 .tree-legend {
-  margin-top: var(--space-7);
   padding: var(--space-5);
   background: var(--surface-1);
   border: 1px solid var(--hairline);
