@@ -230,24 +230,62 @@ export function buildFamilyTreeCanvasLayout(members, options = {}) {
   const rawConnectors = [];
   const drawnSpousePairs = new Set();
 
+  // Group children by their exact set of positioned parents (one "family
+  // unit" per couple, or per lone parent) and route each unit as a single
+  // orthogonal trunk/bus/drop path — one vertical line down from the
+  // marriage point, one horizontal bus, one vertical drop per child —
+  // instead of a separate diagonal line per parent-child pair. Keeps
+  // siblings' connectors from fanning out and crossing each other.
+  const familyGroups = new Map();
+  includedMembers.forEach((member) => {
+    if (!positioned.has(member.id)) return;
+    const positionedParentIds = (member.parentIds || []).filter((id) => positioned.has(id));
+    if (positionedParentIds.length === 0) return;
+
+    const signature = positionedParentIds.slice().sort().join('|');
+    if (!familyGroups.has(signature)) {
+      familyGroups.set(signature, { parentIds: positionedParentIds, childIds: [] });
+    }
+    familyGroups.get(signature).childIds.push(member.id);
+  });
+
+  familyGroups.forEach(({ parentIds, childIds }) => {
+    const parentPositions = parentIds.map((id) => positioned.get(id));
+    const parentCenterXs = parentPositions.map((p) => p.x + CARD_WIDTH / 2);
+    const trunkX = (Math.min(...parentCenterXs) + Math.max(...parentCenterXs)) / 2;
+    const trunkTopY = Math.max(...parentPositions.map((p) => p.y + CARD_HEIGHT));
+    const busY = trunkTopY + V_GAP / 2;
+
+    const childPositions = childIds.map((id) => ({ id, ...positioned.get(id) }));
+    const branch = childPositions[0].branch;
+    const fromId = parentIds[0];
+    const toId = parentIds[parentIds.length - 1];
+
+    const childCenterXs = childPositions.map((c) => c.x + CARD_WIDTH / 2);
+    const busMinX = Math.min(trunkX, ...childCenterXs);
+    const busMaxX = Math.max(trunkX, ...childCenterXs);
+
+    rawConnectors.push({ x1: trunkX, y1: trunkTopY, x2: trunkX, y2: busY, branch, type: 'parent-child', fromId, toId });
+    rawConnectors.push({ x1: busMinX, y1: busY, x2: busMaxX, y2: busY, branch, type: 'parent-child', fromId, toId });
+
+    childPositions.forEach((c) => {
+      const childCenterX = c.x + CARD_WIDTH / 2;
+      rawConnectors.push({
+        x1: childCenterX,
+        y1: busY,
+        x2: childCenterX,
+        y2: c.y,
+        branch,
+        type: 'parent-child',
+        fromId,
+        toId: c.id
+      });
+    });
+  });
+
   includedMembers.forEach((member) => {
     const pos = positioned.get(member.id);
     if (!pos) return;
-
-    (member.parentIds || []).forEach((parentId) => {
-      const parentPos = positioned.get(parentId);
-      if (!parentPos) return;
-      rawConnectors.push({
-        x1: parentPos.x + CARD_WIDTH / 2,
-        y1: parentPos.y + CARD_HEIGHT,
-        x2: pos.x + CARD_WIDTH / 2,
-        y2: pos.y,
-        branch: pos.branch,
-        type: 'parent-child',
-        fromId: parentId,
-        toId: member.id
-      });
-    });
 
     const memberSpouseId = (member.spouseIds || [])[0];
     if (memberSpouseId) {
