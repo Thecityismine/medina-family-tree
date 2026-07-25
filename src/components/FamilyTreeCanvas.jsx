@@ -36,7 +36,11 @@ function FamilyTreeCanvas({ members, onSelectMember }) {
               <button type="button" onClick={() => resetTransform()} aria-label="Reset view">Reset</button>
             </div>
 
-            <TransformComponent wrapperClass="ftc-transform-wrapper" contentClass="ftc-transform-content">
+            <TransformComponent
+              wrapperClass="ftc-transform-wrapper"
+              contentClass="ftc-transform-content"
+              wrapperStyle={{ width: '100%', height: '70vh', minHeight: 480, overflow: 'hidden' }}
+            >
               <div
                 className="ftc-canvas"
                 style={{ width: layout.canvasSize.width, height: layout.canvasSize.height }}
